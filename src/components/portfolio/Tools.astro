@@ -1,0 +1,37 @@
+---
+import {languages} from "../../utils/languages";
+import Capsule from "../ui/Capsule.astro";
+
+type ToolVariant = "default" | "center";
+
+// Base classes that are common to all variants
+const baseClasses = "flex flex-wrap gap-4 max-lg:gap-1 grid-auto-efe";
+
+// Variant-specific classes
+const variantClasses: Record<ToolVariant, string> = {
+    default: "cursor-default",
+    center: "justify-center cursor-default",
+};
+
+interface Props {
+    variant?: ToolVariant;
+    size?: "xs" | "md";
+    linkEnabled?: boolean;
+    showImportant?: boolean;
+    showNonImportant?: boolean;
+}
+
+const {variant = "default", linkEnabled = false, size = "md", showImportant = true, showNonImportant = true} = Astro.props;
+
+// Combine base classes with variant-specific classes
+const classes = `${baseClasses} ${variantClasses[variant as ToolVariant]}`;
+---
+<div class={classes}>
+    {
+        Object.entries(languages)
+            .filter(([key, value]) => showImportant && value.important || showNonImportant && !value.important)
+            .map(([key, value]) => (
+                <Capsule lang={key} linkEnabled={linkEnabled} size={size}/>
+        ))
+    }
+</div>
