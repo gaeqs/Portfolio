@@ -176,6 +176,11 @@ export const languages: Record<string, Language> = {
         name: "Rust",
         iconName: "rust",
         important: false,
+    },
+    unity: {
+        name: "Unity",
+        iconName: "unity",
+        important: true,
     }
 };
 
