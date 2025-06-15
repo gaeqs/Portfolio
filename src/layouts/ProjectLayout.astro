@@ -5,63 +5,77 @@ import Capsule from "../components/ui/Capsule.astro";
 import Heading from "../components/ui/Heading.astro";
 import NavArticle from "../components/layout/NavArticle.astro";
 import Contact from "../components/portfolio/Contact.astro";
-const { frontmatter } = Astro.props;
-
+import {Icon} from "astro-icon/components";
+const {frontmatter} = Astro.props;
 ---
 
 
 <Layout
-  pageTitle={frontmatter.title}
-  description={frontmatter.description}
-  ogimage={frontmatter.image}
+        pageTitle={frontmatter.title}
+        description={frontmatter.description}
+        ogimage={frontmatter.image}
 >
-  <section
-    class="relative mx-auto px-8 max-sm:px-4 flex flex-row justify-center gap-6"
-  >
-    <div class="w-64 max-xl:hidden"></div>
-    <article
-      class="flex flex-col gap-8 max-w-3xl max-md:w-full pb-10 pt-8 mt-8 px-14 max-md:px-10 max-sm:px-4  dark:bg-transparent bg-white dark:border-0 border border-neutral-100 rounded-2xl" 
+    <section
+            class="relative mx-auto px-8 max-sm:px-4 flex flex-row justify-center gap-6"
     >
-      <header class="flex flex-col gap-4" id="start">
-        <div class="flex gap-2 flex-wrap">
-          {
-            frontmatter.languages.map((language: string) => (
-              <Capsule linkEnabled={false} lang={language} />
-            ))
-          }
-        </div>
-        
-        <DatePub date={frontmatter.pubDate} />
+        <div class="w-64 max-xl:hidden"></div>
+        <article
+                class="flex flex-col gap-8 max-w-5xl max-md:w-full pb-10 pt-8 mt-8 px-14 max-md:px-10 max-sm:px-4
+                dark:bg-transparent bg-white dark:border-0 border border-neutral-100 rounded-2xl"
+        >
+            <header class="flex flex-col gap-4" id="start">
+                <div class="flex gap-2 flex-wrap">
+                    {
+                        frontmatter.languages.map((language: string) => (
+                                <Capsule linkEnabled={true} lang={language}/>
+                        ))
+                    }
+                </div>
 
-        <Heading text={frontmatter.title} />
+                <div class="flex items-center gap-4 text-blacktext dark:text-zinc-300">
+                    {
+                        frontmatter?.github && (
+                                    <a
+                                            class="hover:text-mint-300 hover:scale-150 transition-all"
+                                            target="_blank"
+                                            href={frontmatter.github}
+                                            rel="noopener noreferrer"
+                                            aria-label="Link to GitHub"
+                                    >
+                                        <Icon name="github" aria-hidden="true" size={32}/>
+                                    </a>
+                        )
+                    }
+                    <Heading text={frontmatter.title}/>
+                </div>
 
-      
-      </header>
 
-      <figure>
-        {
-          frontmatter.image?.url && (
-            <img
-              class="w-full rounded-xl"
-              src={frontmatter.image.url}
-              alt={frontmatter.image.alt || "Article image"}
-            />
-          )
-        }
-      </figure>
+            </header>
 
-      <div class="markdown " id="content">
-        <slot />
-      </div>
-      
-    </article>
-    <NavArticle title={frontmatter.title} />
-  </section>
-  <div
-    class="flex flex-col gap-6 max-w-4xl max-lg:py-2 py-3 max-xl:py-2 mx-auto"
-  >
-  
+            <figure>
+                {
+                    frontmatter.image?.url && (
+                                <img
+                                        class="w-full rounded-xl"
+                                        src={frontmatter.image.url}
+                                        alt={frontmatter.image.alt || "Article image"}
+                                />
+                    )
+                }
+            </figure>
 
-  </div>
-  <Contact />
+            <div class="markdown " id="content">
+                <slot/>
+            </div>
+
+        </article>
+        <NavArticle title={frontmatter.title}/>
+    </section>
+    <div
+            class="flex flex-col gap-6 max-w-4xl max-lg:py-2 py-3 max-xl:py-2 mx-auto"
+    >
+
+
+    </div>
+    <Contact/>
 </Layout>

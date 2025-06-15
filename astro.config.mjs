@@ -7,7 +7,7 @@ import icon from "astro-icon";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://neonmint.efeele.dev",
+  site: "https://grialc.com",
   integrations: [preact(), icon(), sitemap({
     filter: (page) =>
       !page.includes("/blog/tags") &&
@@ -16,6 +16,10 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
+    server: {
+      allowedHosts: ['grialc.com'],
+      host: true
+    }
   },
   markdown: {
     shikiConfig: {
