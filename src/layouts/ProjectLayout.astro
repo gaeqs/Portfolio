@@ -52,11 +52,11 @@ const {frontmatter} = Astro.props;
 
             </header>
 
-            <figure>
+            <figure class="h-fit">
                 {
                     frontmatter.image?.url && (
                                 <img
-                                        class="w-full rounded-xl"
+                                        class="w-full rounded-xl h-128 object-cover"
                                         src={frontmatter.image.url}
                                         alt={frontmatter.image.alt || "Article image"}
                                 />
