@@ -12,10 +12,10 @@ const Tag = `h${level}`;
 ---
 
 <Tag class:list={[
-    "font-extrabold text-4xl max-xl:text-3xl",
-    level === 2 && "max-md:text-3xl ",
-    level === 3 && "max-md:text-xl ",
-    "dark:text-white text-blacktext",
+    "font-bold tracking-tight text-slate-900 dark:text-white",
+    level === 1 && "text-5xl md:text-6xl lg:text-7xl mb-6",
+    level === 2 && "text-3xl md:text-4xl mb-4",
+    level === 3 && "text-xl md:text-2xl mb-3",
     className
 ]}>
     {text && (
@@ -25,11 +25,8 @@ const Tag = `h${level}`;
         </>
     )}
     {textGradient && (
-        <b
-            class:list={[
-                "bg-linear-to-r from-riptide-700 to-mint-300 dark:from-riptide-100 dark:to-mint-400 text-transparent bg-clip-text",
-                level === 1 
-            ]}
-        >{textGradient}</b>
+        <span
+            class="bg-clip-text text-transparent bg-linear-to-r from-slate-700 to-slate-900 dark:from-slate-100 dark:to-slate-400"
+        >{textGradient}</span>
     )}
 </Tag> 

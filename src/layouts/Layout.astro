@@ -27,7 +27,7 @@ const twitterimage = `${siteUrl}${ogimage.url}`;
 
 <html
   lang="en"
-  class="dark:bg-[#0E0E11] bg-mint-50/5 font-montserrat scroll-smooth"
+  class="bg-slate-50 dark:bg-slate-950 font-sans scroll-smooth"
 >
   <head>
     <meta charset="UTF-8" />
@@ -66,23 +66,17 @@ const twitterimage = `${siteUrl}${ogimage.url}`;
     <meta name="twitter:image:alt" content={ogimage.alt} />
     <meta name="twitter:site" content={SEO.twitter} />
   
-    <meta name="theme-color" content="#0E0E11"/>
+    <meta name="theme-color" content="#0f172a"/>
 
     <!-- Sitemap -->
     <link rel="sitemap" href="/sitemap-index.xml" />
     
   </head>
-  <body class="overflow-x-hidden">
+  <body class="overflow-x-hidden text-slate-600 dark:text-slate-400">
     <SpeedInsights/>
-    <div class="blur-circle"></div>
-    <div
-      style="  background:linear-gradient(45deg, rgba(96, 250, 155, 0) 10.79%, rgba(96, 250, 170, 0.03) 40.92%, rgba(96, 250, 155, 0) 90.35%)"
-      class="fixed top-0 left-0 w-full h-full pointer-events-none -z-1"
-    >
-    </div>
     <Header />
 
-    <div class="min-h-[85vh] ">
+    <div class="min-h-[85vh]">
       <slot />
     </div>
 
