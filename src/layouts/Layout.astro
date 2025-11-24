@@ -1,6 +1,6 @@
 ---
 import "../styles/global.css";
-import Header from "../components/layout/Header.astro";
+import Navbar from "../components/layout/Navbar.astro";
 import Footer from "../components/layout/Footer.astro";
 import  SpeedInsights  from "@vercel/speed-insights/astro"
 import { ClientRouter } from "astro:transitions";
@@ -84,15 +84,12 @@ const twitterimage = `${siteUrl}${ogimage.url}`;
     <div class="fixed inset-0 z-50 pointer-events-none opacity-[0.03] mix-blend-overlay bg-noise"></div>
 
     <SpeedInsights/>
-    <Header />
+    <Navbar />
 
     <div class="min-h-[85vh] relative z-0">
       <slot />
     </div>
 
     <Footer />
-    <script>
-      import "../scripts/menu.js";
-    </script>
   </body>
 </html>

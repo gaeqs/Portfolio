@@ -96,7 +96,18 @@
     @apply border-slate-200 dark:border-slate-800 my-12;
 }
 
-/* Utilities */
 .glass {
     @apply backdrop-blur-md bg-white/70 dark:bg-slate-900/70;
+}
+
+.mobile-overlay {
+    transition: max-height 0.5s ease-in-out;
+    overflow: hidden;
+    padding-top: 0;
+    padding-bottom: 0;
+    max-height: 100vh;
+}
+
+.mobile-overlay-collapsed {
+    max-height: 0;
 }
