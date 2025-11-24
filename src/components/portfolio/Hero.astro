@@ -1,0 +1,126 @@
+---
+import {ArrowRight} from "@lucide/astro";
+
+interface Props {
+  name?: string;
+  role?: string;
+  primaryBtn?: string;
+  secondaryBtn?: string;
+}
+
+const {
+  name = "GAEL RIAL",
+  role = "Graphics Engineer & High-Performance Systems Architect",
+  primaryBtn = "Contact Me",
+  secondaryBtn = "View Work",
+} = Astro.props;
+---
+
+<section class="relative min-h-[95vh] flex items-center overflow-hidden bg-zinc-950">
+  <!-- Background Grid -->
+  <div class="absolute inset-0 z-0 pointer-events-none bg-hero">
+    <div class="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:var(--grid-size)_var(--grid-size)]"></div>
+    <div class="absolute inset-0 bg-radial-gradient from-transparent via-zinc-950/50 to-zinc-950"></div>
+  </div>
+
+  <!-- Grid Beams -->
+  <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+    <!-- Horizontal Beams -->
+    <div class="absolute top-[round(10%,var(--grid-size))] left-[-10%] h-[1px] w-[200px] bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-0 animate-beam-h shadow-[0_0_10px_rgba(6,182,212,0.5)]" style="animation-delay: 0s; animation-duration: 7s;"></div>
+    <div class="absolute top-[round(40%,var(--grid-size))] left-[-10%] h-[1px] w-[150px] bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-0 animate-beam-h shadow-[0_0_10px_rgba(99,102,241,0.5)]" style="animation-delay: 2s; animation-duration: 5s;"></div>
+    <div class="absolute top-[round(90%,var(--grid-size))] left-[-10%] h-[1px] w-[300px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-0 animate-beam-h shadow-[0_0_10px_rgba(34,211,238,0.5)]" style="animation-delay: 4s; animation-duration: 9s;"></div>
+
+    <!-- Vertical Beams -->
+    <div class="absolute left-[round(10%,var(--grid-size))] top-[-10%] w-[1px] h-[200px] bg-gradient-to-b from-transparent via-cyan-500 to-transparent opacity-0 animate-beam-v shadow-[0_0_10px_rgba(6,182,212,0.5)]" style="animation-delay: 1s; animation-duration: 6s;"></div>
+    <div class="absolute left-[round(60%,var(--grid-size))] top-[-10%] w-[1px] h-[150px] bg-gradient-to-b from-transparent via-indigo-500 to-transparent opacity-0 animate-beam-v shadow-[0_0_10px_rgba(99,102,241,0.5)]" style="animation-delay: 3s; animation-duration: 8s;"></div>
+    <div class="absolute left-[round(80%,var(--grid-size))] top-[-10%] w-[1px] h-[250px] bg-gradient-to-b from-transparent via-cyan-400 to-transparent opacity-0 animate-beam-v shadow-[0_0_10px_rgba(34,211,238,0.5)]" style="animation-delay: 5s; animation-duration: 10s;"></div>
+  </div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-6 w-full">
+    <div class="max-w-4xl">
+      <!-- Name -->
+      <h1 class="text-6xl md:text-8xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-zinc-200 to-zinc-500 mb-2">
+        {name}
+      </h1>
+
+      <!-- Role -->
+      <p class="text-xl md:text-2xl text-zinc-400 font-light tracking-wide mb-12">
+        {role}
+      </p>
+
+      <!-- System Specs -->
+      <div class="mb-12 font-mono text-sm text-cyan-500/80 space-y-2 border-l-2 border-cyan-500/20 pl-4">
+        <div class="flex items-center gap-2">
+          <span class="text-zinc-600">::</span>
+          <span class="font-bold">CORE:</span>
+          <span>C++ / Vulkan / Java</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-zinc-600">::</span>
+          <span class="font-bold">SHADING:</span>
+          <span>HLSL / GLSL</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-zinc-600">::</span>
+          <span class="font-bold">STATUS:</span>
+          <span class="animate-pulse">Rendering...</span>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex flex-wrap gap-4">
+        <a
+                href="#contact"
+                class="px-8 py-3 bg-zinc-100 text-zinc-950 font-medium rounded-sm hover:bg-white transition-colors flex items-center gap-2"
+        >
+          {primaryBtn}
+          <ArrowRight class="w-4 h-4"/>
+        </a>
+        <a
+                href="#projects"
+                class="px-8 py-3 border border-zinc-800 text-zinc-300 font-medium rounded-sm hover:border-zinc-600 hover:text-white transition-colors"
+        >
+          {secondaryBtn}
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-zinc-950 to-transparent pointer-events-none z-20"></div>
+</section>
+
+<style>
+    .bg-radial-gradient {
+        background: radial-gradient(circle at center, transparent 60%, #09090b 100%);
+    }
+
+    @keyframes beam-h {
+        0% { left: -10%; opacity: 0; }
+        10% { opacity: 1; }
+        90% { opacity: 1; }
+        100% { left: 100%; opacity: 0; }
+    }
+
+    @keyframes beam-v {
+        0% { top: -10%; opacity: 0; }
+        10% { opacity: 1; }
+        90% { opacity: 1; }
+        100% { top: 100%; opacity: 0; }
+    }
+
+    .animate-beam-h {
+        animation-name: beam-h;
+        animation-timing-function: linear;
+        animation-iteration-count: infinite;
+    }
+
+    .animate-beam-v {
+        animation-name: beam-v;
+        animation-timing-function: linear;
+        animation-iteration-count: infinite;
+    }
+
+    .bg-hero {
+
+    }
+</style>

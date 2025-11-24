@@ -1,50 +1,34 @@
 ---
-import ExperienceItem from "./ExperienceItem.astro";
-import {BriefcaseBusiness, GraduationCap} from '@lucide/astro'
+import ExperienceTimeline from "./ExperienceTimeline.astro";
 const EXPERIENCE = [
     {
-        date: "02/2022 - 07/2023",
+        date: "[02/2022 - 07/2023]",
         title: "External Internship - Visualization development for the Human Brain Project",
         company: "URJC - VG-Lab (Visualization & Graphics Lab)",
-        icon: BriefcaseBusiness,
         description: "Development of scientific visualization tools using C/C++, CMake, Boost, and Qt. " +
             "Notable contributions to applications such as ViSimpl and SynCoPa. " +
-            "Version control with GitLab and GitHub. Additional use of Python, Java, JavaScript, and TypeScript for specific tasks."
+            "Version control with GitLab and GitHub. Additional use of Python, Java, JavaScript, and TypeScript for specific tasks.",
+        tags: [],
+        current: false,
     },
     {
-        date: "11/2021 - 02/2022 | 07/2022 - 09/2022",
+        date: "[11/2021 - 02/2022] | [07/2022 - 09/2022]",
         title: "Collaboration -  Technology development for the Human Brain Project",
         company: "URJC - VG-Lab (Visualization & Graphics Lab)",
-        icon: BriefcaseBusiness,
         description: "Developed AcuteRecorder, a Qt-based tool for selective recording of application UI sections. " +
-            "Created ParticleLab, a library for OpenGL-based particle generation with high efficiency."
+            "Created ParticleLab, a library for OpenGL-based particle generation with high efficiency.",        tags: [],
+        current: false,
     },
     {
-        date: "07/2023 - Present",
+        date: "[07/2023 - PRESENT]",
         title: "Permanent role in graphics and visualization development for Visualization & Graphics Lab",
         company: "URJC - VG-Lab (Visualization & Graphics Lab)",
-        icon: BriefcaseBusiness,
         description: "Ongoing development of visualization technologies, building upon prior internship and collaboration work. " +
-            "Over four years of experience in the group, contributing to research and tool development in the context of scientific visualization."
+            "Over four years of experience in the group, contributing to research and tool development in the context of scientific visualization.",
+        tags: [],
+        current: true,
     }
 ];
 ---
 
-<div class="relative max-md:mt-0 mt-8 h-full before:absolute before:left-[-35px] before:block before:h-full before:border-l-2 before:border-black/20 dark:before:border-white/15 before:content-['']" aria-label="Work Experience">
-    <ol class="relative mt-10">
-        {
-            EXPERIENCE.map((experience, index) => (
-                    <li class="">
-                        <article role="article" aria-labelledby={`experience-title-${index}`}>
-                            <div
-                                    class="flex flex-col gap-2  text-zinc-00 dark:text-zinc-300 md:col-span-3"
-                                    aria-describedby={`experience-title-${index}`}
-                            >
-                                <ExperienceItem {...experience}/>
-                            </div>
-                        </article>
-                    </li>
-            ))
-        }
-    </ol>
-</div>
+<ExperienceTimeline experiences={EXPERIENCE} />

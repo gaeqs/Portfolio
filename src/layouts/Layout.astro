@@ -3,6 +3,7 @@ import "../styles/global.css";
 import Header from "../components/layout/Header.astro";
 import Footer from "../components/layout/Footer.astro";
 import  SpeedInsights  from "@vercel/speed-insights/astro"
+import { ClientRouter } from "astro:transitions";
 const {
   pageTitle = "NeonMint by EFEELE 🚀",
   description = "Welcome to NeonMint by EFEELE, where I develop software and share knowledge.",
@@ -27,7 +28,7 @@ const twitterimage = `${siteUrl}${ogimage.url}`;
 
 <html
   lang="en"
-  class="bg-slate-50 dark:bg-slate-950 font-sans scroll-smooth"
+  class="bg-zinc-950 font-sans scroll-smooth dark"
 >
   <head>
     <meta charset="UTF-8" />
@@ -66,17 +67,26 @@ const twitterimage = `${siteUrl}${ogimage.url}`;
     <meta name="twitter:image:alt" content={ogimage.alt} />
     <meta name="twitter:site" content={SEO.twitter} />
   
-    <meta name="theme-color" content="#0f172a"/>
+    <meta name="theme-color" content="#09090b"/>
 
     <!-- Sitemap -->
     <link rel="sitemap" href="/sitemap-index.xml" />
     
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <ClientRouter />
   </head>
-  <body class="overflow-x-hidden text-slate-600 dark:text-slate-400">
+  <body class="overflow-x-hidden text-zinc-400 bg-zinc-950 selection:bg-cyan-900/30 selection:text-cyan-200">
+    <!-- Film Grain Overlay -->
+    <div class="fixed inset-0 z-50 pointer-events-none opacity-[0.03] mix-blend-overlay bg-noise"></div>
+
     <SpeedInsights/>
     <Header />
 
-    <div class="min-h-[85vh]">
+    <div class="min-h-[85vh] relative z-0">
       <slot />
     </div>
 

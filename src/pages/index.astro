@@ -1,68 +1,89 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import Experience from "../components/portfolio/Experience.astro";
-import HeroSaaS from "../components/portfolio/HeroSaaS.astro";
-import Contact from "../components/portfolio/Contact.astro";
+import Hero from "../components/portfolio/Hero.astro";
 import ListProjects from "../components/portfolio/ListProjects.astro";
-import { Icon } from "astro-icon/components";
-import Heading from "../components/ui/Heading.astro";
+import ExperienceTimeline from "../components/portfolio/ExperienceTimeline.astro";
+import SectionDivider from "../components/ui/SectionDivider.astro";
+import Contact from "../components/portfolio/Contact.astro";
+import Experience from "../components/portfolio/Experience.astro";
 import Academics from "../components/portfolio/Academics.astro";
-import { GraduationCap } from "@lucide/astro";
 
 const pageTitle = "Gael Rial Costas";
-const description = "Is a modern, minimalist template crafted for developers and digital creatives.";
+const description = "Graphics Engineer & High-Performance Systems Architect";
 const ogimage = {
-  url: "/images/imagedefault.webp",
-  alt: "Screenshot of a web portfolio with a modern and dark design.",
+  url: "/images/og-image.png",
+  alt: "Gael Rial Portfolio",
 };
+
+const EXPERIENCE = [
+    {
+        date: "07/2023 - PRESENT",
+        title: "Graphics & Visualization Engineer",
+        company: "URJC - VG-Lab",
+        description: "Leading development of high-performance visualization technologies. Architecting scalable solutions for scientific data rendering and analysis.",
+        tags: ["C++", "Vulkan", "OpenGL", "Qt", "Python"],
+        current: true,
+    },
+    {
+        date: "02/2022 - 07/2023",
+        title: "Scientific Visualization Developer",
+        company: "URJC - VG-Lab",
+        description: "Developed core visualization tools for the Human Brain Project. Implemented optimized rendering pipelines using C++ and CMake.",
+        tags: ["C++", "CMake", "Qt", "GitLab"],
+        current: false,
+    },
+    {
+        date: "11/2021 - 09/2022",
+        title: "R&D Collaborator",
+        company: "URJC - VG-Lab",
+        description: "Created AcuteRecorder for UI analysis and ParticleLab for efficient particle generation. Focused on performance optimization.",
+        tags: ["C++", "OpenGL", "Research"],
+        current: false,
+    }
+];
 ---
 
 <Layout pageTitle={pageTitle} description={description} ogimage={ogimage}>
-  <HeroSaaS />
+  <!-- 1. Hero Section -->
+  <Hero />
 
-  <section class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto scroll-m-16" id="experience">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-      
-      <!-- Academic Section -->
-      <div class="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all">
-        <div class="flex gap-4 items-center mb-8">
-          <div class="p-3 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
-            <GraduationCap class="w-6 h-6"/>
-          </div>
-          <Heading text="Academic" level={2} className="!mb-0 !text-2xl"/>
-        </div>
-        <Academics/>
-      </div>
+  <div class="max-w-7xl mx-auto px-6 flex flex-col gap-32 pb-32">
+    
+    <!-- Divider 01 -->
+    <SectionDivider label="01 // WORK" />
 
-      <!-- Work Section -->
-      <div class="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all">
-        <div class="flex gap-4 items-center mb-8">
-          <div class="p-3 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
-            <Icon name="briefcase" class="w-6 h-6" />
-          </div>
-          <Heading text="Work" level={2} className="!mb-0 !text-2xl"/>
-        </div>
-        <Experience />
-      </div>
-
-    </div>
-  </section>
-
-  <section class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto scroll-m-16" id="projects">
-    <div class="flex flex-col gap-12">
-      <div class="text-center max-w-3xl mx-auto">
-        <div class="inline-flex items-center justify-center p-3 mb-6 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
-          <Icon name="code" class="w-6 h-6" />
-        </div>
-        <Heading text="Featured Projects" level={2} />
-        <p class="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-          I love turning ideas into real projects. Here are some of the developments I've worked on, applying technology, design, and lots of creativity.
-        </p>
-      </div>
-
+    <!-- 2. Selected Projects -->
+    <section id="projects" class="scroll-mt-24">
       <ListProjects />
-    </div>
-  </section>
+    </section>
 
-  <Contact />
+    <!-- Divider 02 -->
+    <SectionDivider label="02 // LOG" />
+
+    <!-- 3. Experience -->
+    <section id="experience" class="scroll-mt-24">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <!-- Title Column -->
+        <div class="lg:col-span-1">
+          <h2 class="text-3xl font-bold text-zinc-100 mb-4 tracking-tight">System Log</h2>
+          <p class="text-zinc-500 leading-relaxed">
+            A chronological record of professional roles, academic milestones, and key engineering contributions.
+          </p>
+        </div>
+        
+        <!-- Timeline Column -->
+        <div class="lg:col-span-2 grid grid-cols-2">
+          <Academics/>
+          <Experience/>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Divider 03 -->
+    <SectionDivider label="03 // COMM" />
+
+    <!-- 4. Contact -->
+    <Contact />
+    
+  </div>
 </Layout>

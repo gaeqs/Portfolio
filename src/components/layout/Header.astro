@@ -1,10 +1,9 @@
 ---
 import Navigation from "./Navigation.astro";
-import ThemeIcon from "../ui/ThemeIcon.astro";
 import Social from "../ui/Social.astro";
-import { Icon } from "astro-icon/components";
-import { AstroError } from "astro/errors";
-import { getCollection} from "astro:content";
+import {Icon} from "astro-icon/components";
+import {AstroError} from "astro/errors";
+import {getCollection} from "astro:content";
 
 const [staticData] = await getCollection('staticData');
 
@@ -13,51 +12,68 @@ if (!staticData) {
 }
 
 const currentPath = Astro.url.pathname;
-const routes = ["/", "/portfolio", "/about-me", ]; 
+const routes = ["/", "/portfolio", "/about-me",];
 
 // Check if the current route is in the list of routes
 const isActiveRoute = routes.includes(currentPath);
 
-const navItems = isActiveRoute 
-  ? ["home", "experience", "projects", "about", "blog",]
-  : ["home", "blog", "about"]; // Change the items
+const navItems =
+  ["home", "projects", "experience" /*, "about", "blog"*/]
 ---
 
 <header
   role="banner"
   aria-label="Main navigation"
-  class="sticky top-0 z-50 w-full p-4 font-medium text-blacktext dark:text-zinc-300 dark:bg-[#0E0E11]/80 dark:border-b dark:border-zinc-800 bg-white/90 backdrop-blur-xs dark:backdrop-blur-xs max-md:z-50 max-md:px-0 transition-all"
+  class="fixed top-0 left-0 w-full z-50 bg-zinc-950/80 backdrop-blur-md border-b border-white/5 transition-all"
 >
   <div
-    class="relative mx-auto flex max-w-7xl flex-row items-center justify-between max-xl:px-6"
+    class="relative mx-auto flex max-w-7xl flex-row items-center justify-between px-6 py-3"
   >
-    <a href="/" aria-label="Go to home">
-      <Icon
-        name="logo"
-        class="h-6 cursor-pointer transition-all hover:text-mint-300"
-        aria-hidden="true"
-      />
+    <!-- Logo (Left) -->
+    <a href="/" aria-label="Go to home" class="flex items-center gap-1 group">
+      <span class="font-mono text-sm font-bold text-zinc-100 tracking-tighter">GAEL.RIAL</span>
+      <span class="w-2 h-4 bg-cyan-500 animate-pulse"></span>
     </a>
 
+    <!-- Navigation (Center/Right) -->
     <Navigation items={navItems} />
 
-    <div class="flex items-center justify-between gap-5 text-xl">
-      <div class="max-md:hidden flex items-center justify-center gap-5" role="list">
+    <!-- Socials (Far Right) -->
+    <div class="flex items-center gap-4 text-xl md:pl-5 border-l border-white/10 ml-5 pl-5">
+      <div class="max-md:hidden flex items-center justify-center gap-4" role="list">
         <Social link={staticData.data.github} iconName={staticData.data.githubIconName} />
         <Social link={staticData.data.linkedin} iconName={staticData.data.linkedinIconName} />
       </div>
-    </div>
-    <div class="flex items-center gap-5 text-xl md:pl-5">
-      <ThemeIcon />
-      <button 
-        class="hamburger"
+      
+      <!-- Mobile Menu Button -->
+      <button
+        class="hamburger p-1 rounded-md hover:bg-white/5 transition-colors text-zinc-400 hover:text-cyan-400 md:hidden"
         aria-label="Open menu"
         aria-expanded="false"
         aria-controls="mobile-menu"
       >
-        <Icon name="bars" class="hamburger-icon bars-icon" aria-hidden="true" />
-        <Icon name="xmark" class="hamburger-icon xmark-icon" aria-hidden="true" />
+        <Icon name="bars" class="hamburger-icon bars-icon w-5 h-5" aria-hidden="true" />
+        <Icon name="xmark" class="hamburger-icon xmark-icon w-5 h-5" aria-hidden="true" />
       </button>
     </div>
   </div>
+
+  <!-- Scroll Progress Bar -->
+  <div class="absolute bottom-0 left-0 h-[1px] bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-100 ease-out w-0" id="scrollProgress"></div>
 </header>
+
+<script>
+  // Scroll Progress Logic
+  const scrollProgress = document.getElementById('scrollProgress');
+  
+  const updateScrollProgress = () => {
+    if (!scrollProgress) return;
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrollPercent = (scrollTop / scrollHeight) * 100;
+    scrollProgress.style.width = `${scrollPercent}%`;
+  };
+
+  window.addEventListener('scroll', updateScrollProgress);
+  window.addEventListener('resize', updateScrollProgress);
+</script>

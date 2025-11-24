@@ -1,56 +1,43 @@
 ---
 import ExperienceItem from "./ExperienceItem.astro";
-import {BriefcaseBusiness, GraduationCap} from '@lucide/astro'
+import ExperienceTimeline from "./ExperienceTimeline.astro";
 const EXPERIENCE = [
     {
-        date: "09/2016 - 06/2018",
+        date: "[09/2016 - 06/2018]",
         title: "Science Baccalaureate",
         company: "Auga da Laxe High School",
-        icon: GraduationCap,
         description: "",
+        tags: [],
+        current: false,
     },
     {
-        date: "09/2018 - 07/2022",
+        date: "[09/2018 - 07/2022]",
         title: "Dual Bachelor's Degree in Game Design & Development + Computer Engineering",
         company: "Universidad Rey Juan Carlos",
-        icon: GraduationCap,
         description: "Awarded best academic record in the Computer Engineering program. " +
-            "Earned 8 distinctions (matrículas de honor), including both final degree projects."
+            "Earned 8 distinctions (matrículas de honor), including both final degree projects.",
+        tags: [],
+        current: false,
     },
     {
-        date: "09/2022 - 07/2023",
+        date: "[09/2022 - 07/2023]",
         title: "Master’s Degree in Computer Graphics, Games and Virtual Reality",
         company: "Universidad Rey Juan Carlos",
-        icon: GraduationCap,
-        description: "Awarded 3 distinctions (matrículas de honor)."
+        description: "Awarded 3 distinctions (matrículas de honor).",
+        tags: [],
+        current: false,
     },
     {
-        date: "10/2023 - Present",
+        date: "10/2023 - PRESENT",
         title: "PhD in Computer Graphics and High-Performance Computing",
         company: "Universidad Rey Juan Carlos",
-        icon: GraduationCap,
         description: "Ongoing doctoral research focused on real-time visualization techniques, " +
             "GPU-based geometry generation, and symbolic representation of complex scientific structures. " +
-            "The work is being developed within VG-Lab, in the context of scientific visualization and neuroinformatics."
+            "The work is being developed within VG-Lab, in the context of scientific visualization and neuroinformatics.",
+        tags: [],
+        current: true,
     }
 ];
 ---
 
-<div class="relative max-md:mt-0 mt-8 h-full before:absolute before:left-[-35px] before:block before:h-full before:border-l-2 before:border-black/20 dark:before:border-white/15 before:content-['']" aria-label="Academic Background">
-    <ol class="relative mt-10">
-        {
-            EXPERIENCE.map((experience, index) => (
-                    <li class="">
-                        <article role="article" aria-labelledby={`experience-title-${index}`}>
-                            <div
-                                    class="flex flex-col gap-2  text-zinc-00 dark:text-zinc-300 md:col-span-3"
-                                    aria-describedby={`experience-title-${index}`}
-                            >
-                                <ExperienceItem {...experience}/>
-                            </div>
-                        </article>
-                    </li>
-            ))
-        }
-    </ol>
-</div>
+<ExperienceTimeline experiences={EXPERIENCE} />
