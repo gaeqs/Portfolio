@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -60,7 +61,8 @@
     @apply text-slate-900 dark:text-white font-medium underline decoration-slate-300 dark:decoration-slate-700 underline-offset-4 hover:decoration-slate-900 dark:hover:decoration-white transition-all;
 }
 
-.markdown ul, .markdown ol {
+.markdown ul,
+.markdown ol {
     @apply text-slate-600 dark:text-slate-400 text-lg leading-relaxed mb-6 pl-6;
 }
 

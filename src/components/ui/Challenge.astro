@@ -1,0 +1,39 @@
+---
+interface Props {
+  title?: string;
+}
+
+const {title} = Astro.props;
+---
+
+<div class="bg-zinc-900/30 border border-white/5 rounded-xl overflow-hidden not-prose shadow-sm">
+
+  {title && (
+          <div class="bg-zinc-900/80 px-4 py-3 border-b border-white/5">
+            <h4 class="text-zinc-100 font-bold text-sm tracking-tight">{title}</h4>
+          </div>
+  )}
+
+  {/* SECCIÓN: THE CHALLENGE */}
+  <div class="border-b border-white/5">
+    <div class="bg-red-500/10 border-b border-red-500/10 px-4 py-1.5 flex items-center gap-2">
+      <div class="w-1.5 h-1.5 rounded-full bg-red-500"></div>
+      <span class="text-red-400 text-[10px] font-mono font-bold uppercase tracking-wider">The Challenge</span>
+    </div>
+    <div class="p-5 text-zinc-300 text-sm leading-relaxed">
+      <slot name="challenge"/>
+    </div>
+  </div>
+
+  {/* SECCIÓN: THE SOLUTION */}
+  <div>
+    <div class="bg-green-500/10 border-b border-green-500/10 px-4 py-1.5 flex items-center gap-2">
+      <div class="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+      <span class="text-green-400 text-[10px] font-mono font-bold uppercase tracking-wider">The Solution</span>
+    </div>
+    <div class="p-5 text-zinc-300 text-sm leading-relaxed">
+      <slot name="solution"/>
+    </div>
+  </div>
+
+</div>

@@ -1,40 +1,95 @@
 ---
-import Heading from "../ui/Heading.astro";
-import Button from "../ui/Button.astro";
-import { AstroError } from "astro/errors";
-import { getCollection} from "astro:content";
+import { Icon } from "astro-icon/components";
+import { Copy, Check } from "@lucide/astro";
+import { getCollection } from "astro:content";
 
 const [staticData] = await getCollection('staticData');
-
-if (!staticData) {
-  throw new AstroError("JSON data not found");
-}
+const { email, github, linkedin } = staticData.data;
 ---
 
-<section>
-  <div
-    class="w-full border-b bg-linear-to-b from-mint-100 to-transparent dark:from-mint-800 dark:border-mint-950 border-mint-100"
-  >
-    <div class="mx-auto max-w-5xl px-8 py-24 max-sm:py-12">
-      <div class="flex items-center justify-between max-sm:flex-col max-sm:gap-8 max-sm:text-center">
-        <div class="max-w-lg">
-          <Heading
-            text={staticData.data.contactSectionSubtitle}
-            textGradient={staticData.data.contactSectionSubtitle}
-            level={2}
-          />
-        </div>
-        <div
-          class="transition-all duration-500 group-hover:animate-jump group-hover:animate-duration-[300ms] group-hover:animate-ease-in-out group-hover:scale-105 hover:scale-125"
-        >   
-          <Button
-            variant="big"
-            link={`mailto:${staticData.data.email}`}
-            text={staticData.data.contactSectionButtonText}
-            iconName={staticData.data.contactSectionButtonIcon}
-          />
+<section class="lg:w-3xl mx-auto flex flex-col gap-12 pb-12 px-6 bg-zinc-950" id="contact">
+    <!-- Command Line Email Box -->
+    <div 
+      class="group relative bg-zinc-900/50 border border-zinc-800 rounded-lg p-6 flex items-center justify-between hover:border-cyan-500/50 transition-all cursor-pointer overflow-hidden"
+      id="emailBox"
+      data-email={email}
+    >
+      <div class="flex items-center gap-3 overflow-hidden">
+        <span class="text-zinc-600 font-mono text-lg select-none">$</span>
+        <span class="font-mono text-cyan-400 text-sm md:text-base truncate">
+          mailto:{email}
+        </span>
+      </div>
+      
+      <div class="flex items-center gap-2 text-zinc-500 group-hover:text-cyan-400 transition-colors">
+        <span class="text-xs font-mono uppercase tracking-wider hidden md:block opacity-0 group-hover:opacity-100 transition-opacity">Copy</span>
+        <div class="relative w-5 h-5">
+          <Copy class="w-5 h-5 absolute inset-0 transition-all duration-300 scale-100 opacity-100" id="copyIcon" />
+          <Check class="w-5 h-5 absolute inset-0 transition-all duration-300 scale-0 opacity-0 text-green-400" id="checkIcon" />
         </div>
       </div>
+
+      <!-- Copied Feedback Overlay -->
+      <div class="absolute inset-0 bg-cyan-500/10 translate-y-full transition-transform duration-300" id="copyFeedback"></div>
     </div>
-  </div>
+
+    <!-- Social Modules Grid -->
+    <div class="grid gap-4">
+      <!-- GitHub -->
+      <a 
+        href={github}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="flex items-center justify-between p-6 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 hover:border-zinc-700 transition-all group"
+      >
+        <div class="flex items-center gap-4">
+          <div class="p-2 bg-zinc-950 rounded-md border border-zinc-800 group-hover:border-zinc-700 text-zinc-400 group-hover:text-white transition-colors">
+            <Icon name="github" class="w-6 h-6" />
+          </div>
+          <span class="font-bold text-zinc-200 group-hover:text-white">GitHub</span>
+        </div>
+        <span class="font-mono text-xs text-zinc-500 group-hover:text-cyan-400 transition-colors">CHECK SOURCE</span>
+      </a>
+    </div>
 </section>
+
+<script>
+  const emailBox = document.getElementById('emailBox');
+  const copyIcon = document.getElementById('copyIcon');
+  const checkIcon = document.getElementById('checkIcon');
+  const copyFeedback = document.getElementById('copyFeedback');
+
+  if (emailBox && copyIcon && checkIcon && copyFeedback) {
+    emailBox.addEventListener('click', async () => {
+      const email = emailBox.getAttribute('data-email');
+      if (!email) return;
+
+      try {
+        await navigator.clipboard.writeText(email);
+        
+        // Animation State
+        copyIcon.classList.remove('scale-100', 'opacity-100');
+        copyIcon.classList.add('scale-0', 'opacity-0');
+        
+        checkIcon.classList.remove('scale-0', 'opacity-0');
+        checkIcon.classList.add('scale-100', 'opacity-100');
+        
+        copyFeedback.classList.remove('translate-y-full');
+        
+        // Reset after 2s
+        setTimeout(() => {
+          copyIcon.classList.add('scale-100', 'opacity-100');
+          copyIcon.classList.remove('scale-0', 'opacity-0');
+          
+          checkIcon.classList.add('scale-0', 'opacity-0');
+          checkIcon.classList.remove('scale-100', 'opacity-100');
+          
+          copyFeedback.classList.add('translate-y-full');
+        }, 2000);
+
+      } catch (err) {
+        console.error('Failed to copy email:', err);
+      }
+    });
+  }
+</script>

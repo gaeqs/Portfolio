@@ -2,11 +2,11 @@
 import Layout from "../layouts/Layout.astro";
 import Hero from "../components/portfolio/Hero.astro";
 import ListProjects from "../components/portfolio/ListProjects.astro";
-import ExperienceTimeline from "../components/portfolio/ExperienceTimeline.astro";
 import SectionDivider from "../components/ui/SectionDivider.astro";
 import Contact from "../components/portfolio/Contact.astro";
 import Experience from "../components/portfolio/Experience.astro";
 import Academics from "../components/portfolio/Academics.astro";
+import Title from "../components/ui/Title.astro";
 
 const pageTitle = "Gael Rial Costas";
 const description = "Graphics Engineer & High-Performance Systems Architect";
@@ -14,76 +14,49 @@ const ogimage = {
   url: "/images/og-image.png",
   alt: "Gael Rial Portfolio",
 };
-
-const EXPERIENCE = [
-    {
-        date: "07/2023 - PRESENT",
-        title: "Graphics & Visualization Engineer",
-        company: "URJC - VG-Lab",
-        description: "Leading development of high-performance visualization technologies. Architecting scalable solutions for scientific data rendering and analysis.",
-        tags: ["C++", "Vulkan", "OpenGL", "Qt", "Python"],
-        current: true,
-    },
-    {
-        date: "02/2022 - 07/2023",
-        title: "Scientific Visualization Developer",
-        company: "URJC - VG-Lab",
-        description: "Developed core visualization tools for the Human Brain Project. Implemented optimized rendering pipelines using C++ and CMake.",
-        tags: ["C++", "CMake", "Qt", "GitLab"],
-        current: false,
-    },
-    {
-        date: "11/2021 - 09/2022",
-        title: "R&D Collaborator",
-        company: "URJC - VG-Lab",
-        description: "Created AcuteRecorder for UI analysis and ParticleLab for efficient particle generation. Focused on performance optimization.",
-        tags: ["C++", "OpenGL", "Research"],
-        current: false,
-    }
-];
 ---
 
 <Layout pageTitle={pageTitle} description={description} ogimage={ogimage}>
   <!-- 1. Hero Section -->
-  <Hero />
+  <section id="hero" class="scroll-mt-24">
+    <Hero/>
+  </section>
 
-  <div class="max-w-7xl mx-auto px-6 flex flex-col gap-32 pb-32">
-    
-    <!-- Divider 01 -->
-    <SectionDivider label="01 // WORK" />
+  <div class="max-w-7xl mx-auto px-6 flex flex-col gap-12">
 
     <!-- 2. Selected Projects -->
+    <SectionDivider label="01 // WORK"/>
+    <Title
+            title="Compiled Modules"
+            description="A catalog of graphics engines, tools, simulations and other projects I've worked on."
+    />
     <section id="projects" class="scroll-mt-24">
-      <ListProjects />
+      <ListProjects/>
     </section>
 
-    <!-- Divider 02 -->
-    <SectionDivider label="02 // LOG" />
-
     <!-- 3. Experience -->
+    <SectionDivider label="02 // LOG"/>
     <section id="experience" class="scroll-mt-24">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
-        <!-- Title Column -->
-        <div class="lg:col-span-1">
-          <h2 class="text-3xl font-bold text-zinc-100 mb-4 tracking-tight">System Log</h2>
-          <p class="text-zinc-500 leading-relaxed">
-            A chronological record of professional roles, academic milestones, and key engineering contributions.
-          </p>
-        </div>
-        
-        <!-- Timeline Column -->
-        <div class="lg:col-span-2 grid grid-cols-2">
+        <Title
+                title="System Log"
+                description="A chronological record of professional roles, academic milestones, and key engineering contributions."
+        />
+        <div class="grid lg:grid-cols-2 lg:col-span-2 gap-12">
           <Academics/>
           <Experience/>
         </div>
       </div>
     </section>
-    
-    <!-- Divider 03 -->
-    <SectionDivider label="03 // COMM" />
 
     <!-- 4. Contact -->
-    <Contact />
-    
+    <SectionDivider label="03 // COMM"/>
+    <Title
+            title="Initialize Connection"
+            description="Open for research collaborations and engineering opportunities."
+    />
+    <section id="contact" class="scroll-mt-24">
+      <Contact/>
+    </section>
   </div>
 </Layout>

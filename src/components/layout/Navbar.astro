@@ -5,13 +5,14 @@ import {AstroError} from "astro/errors";
 
 const [staticData] = await getCollection('staticData');
 if (!staticData) {
-    throw new AstroError("JSON data not found");
+  throw new AstroError("JSON data not found");
 }
 
 const navItems = [
-    {label: "Home", href: "/"},
-    {label: "Projects", href: "/#projects"},
-    {label: "Experience", href: "/#experience"},
+  {label: "Home", href: "/#hero"},
+  {label: "Projects", href: "/#projects"},
+  {label: "Experience", href: "/#experience"},
+  {label: "Contact", href: "/#contact"},
 ];
 ---
 
@@ -19,140 +20,144 @@ const navItems = [
         id="navbar"
         class="fixed top-0 left-0 w-full z-50 h-16 bg-zinc-950/80 backdrop-blur-md border-b border-white/5 transition-all"
 >
-    <div class="relative mx-auto flex h-full max-w-7xl items-center justify-between px-6">
-        <!-- Logo -->
-        <a href="/" aria-label="Go to home" class="flex items-center gap-1 group relative z-50">
-            <span class="font-mono text-sm font-bold text-zinc-100 tracking-tighter">GAEL.RIAL</span>
-            <span class="w-2 h-4 bg-cyan-500 animate-pulse"></span>
-        </a>
+  <div class="relative mx-auto flex h-full max-w-7xl items-center justify-between px-6">
+    <!-- Logo -->
+    <a href="/" aria-label="Go to home" class="flex items-center gap-1 group relative z-50">
+      <span class="font-mono text-sm font-bold text-zinc-100 tracking-tighter">GAEL.RIAL</span>
+      <span class="w-2 h-4 bg-cyan-500 animate-pulse"></span>
+    </a>
 
-        <!-- Desktop Navigation -->
-        <nav class="hidden md:flex items-center gap-8">
-            <ul class="flex items-center gap-6">
-                {
-                    navItems.map((item) => (
-                            <li>
-                                <a
-                                        href={item.href}
-                                        class="text-sm font-medium text-zinc-400 hover:text-cyan-400 transition-colors"
-                                >
-                                    {item.label}
-                                </a>
-                            </li>
-                    ))
-                }
-            </ul>
-
-            <div class="flex items-center gap-4 pl-6 border-l border-white/10">
-                <Social link={staticData.data.github} iconName={staticData.data.githubIconName}/>
-                <Social link={staticData.data.linkedin} iconName={staticData.data.linkedinIconName}/>
-            </div>
-        </nav>
-
-        <!-- Mobile Toggle Button -->
-        <button
-                id="mobile-toggle"
-                class="md:hidden relative z-50 p-2 text-zinc-400 hover:text-cyan-400 transition-colors focus:outline-none group"
-                aria-label="Toggle menu"
-                aria-expanded="false"
-        >
-            <!-- Hamburger Icon (Visible when closed) -->
-            <svg class="w-6 h-6 block group-aria-expanded:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M4 6h16M4 12h16M4 18h16"></path>
-            </svg>
-
-            <!-- Close Icon (Visible when open) -->
-            <svg class="w-6 h-6 hidden group-aria-expanded:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-        </button>
-    </div>
-
-    <!-- Mobile Overlay -->
-    <div
-            id="mobile-overlay"
-            class="mobile-overlay mobile-overlay-collapsed inset-0 z-40 bg-zinc-950 flex flex-col gap-4"
-            aria-hidden="true"
-    >
-        <nav class="flex flex-col gap-4 p-4">
+    <!-- Desktop Navigation -->
+    <nav class="hidden md:flex items-center gap-8">
+      <ul class="flex items-center gap-6">
         {
-            navItems.map((item) => (
+          navItems.map((item) => (
+                  <li>
                     <a
                             href={item.href}
-                            class="text-2xl font-bold text-zinc-300 hover:text-cyan-400 transition-colors"
-                            data-mobile-link
+                            class="text-sm font-medium text-zinc-400 hover:text-cyan-400 transition-colors"
                     >
-                        {item.label}
+                      {item.label}
                     </a>
-            ))
+                  </li>
+          ))
         }
-        </nav>
-    </div>
+      </ul>
+    </nav>
 
-    <!-- Scroll Progress Bar -->
-    <div class="absolute bottom-0 left-0 h-[1px] bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-100 ease-out w-0"
-         id="scrollProgress"></div>
+    <div class="flex gap-4">
+      <div class="flex items-center gap-4 pl-6">
+        <Social link={staticData.data.github} iconName={staticData.data.githubIconName}/>
+        <Social link={"mailto:" + staticData.data.email} iconName={staticData.data.emailIconName}/>
+      </div>
+      <!-- Mobile Toggle Button -->
+      <button
+              id="mobile-toggle"
+              class="md:hidden relative z-50 p-2 text-zinc-400 hover:text-cyan-400 transition-colors focus:outline-none group"
+              aria-label="Toggle menu"
+              aria-expanded="false"
+      >
+        <!-- Hamburger Icon (Visible when closed) -->
+        <svg class="w-6 h-6 block group-aria-expanded:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+
+        <!-- Close Icon (Visible when open) -->
+        <svg class="w-6 h-6 hidden group-aria-expanded:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Overlay -->
+  <div
+          id="mobile-overlay"
+          class="mobile-overlay mobile-overlay-collapsed inset-0 z-40 bg-zinc-950 flex flex-row gap-4"
+          aria-hidden="true"
+  >
+    <nav class="flex flex-col gap-4 p-4">
+      {
+        navItems.map((item) => (
+                <a
+                        href={item.href}
+                        class="text-sm font-medium text-zinc-400 hover:text-cyan-400 transition-colors"
+                        data-mobile-link
+                >
+                  {item.label}
+                </a>
+        ))
+      }
+    </nav>
+  </div>
+
+  <!-- Scroll Progress Bar -->
+  <div class="absolute bottom-0 left-0 h-[1px] bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-100 ease-out w-0"
+       id="scrollProgress"></div>
 </header>
 
 <script>
-    function initNavbar() {
-        const toggle = document.getElementById('mobile-toggle');
-        const overlay = document.getElementById('mobile-overlay');
-        const mobileLinks = document.querySelectorAll('[data-mobile-link]');
-        const body = document.body;
-        const scrollProgress = document.getElementById('scrollProgress');
+  function initNavbar() {
+    const toggle = document.getElementById('mobile-toggle');
+    const overlay = document.getElementById('mobile-overlay');
+    const mobileLinks = document.querySelectorAll('[data-mobile-link]');
+    const body = document.body;
+    const scrollProgress = document.getElementById('scrollProgress');
 
-        if (!toggle || !overlay) return;
+    if (!toggle || !overlay) return;
 
-        // --- Logic ---
-        const toggleMenu = (forceClose = false) => {
-            const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
-            const shouldClose = forceClose || isExpanded;
+    // --- Logic ---
+    const toggleMenu = (forceClose = false) => {
+      const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+      const shouldClose = forceClose || isExpanded;
 
-            toggle.setAttribute('aria-expanded', shouldClose ? 'false' : 'true');
+      toggle.setAttribute('aria-expanded', shouldClose ? 'false' : 'true');
 
-            if (shouldClose) {
-                overlay.classList.add("mobile-overlay-collapsed");
-            } else {
-                overlay.classList.remove("mobile-overlay-collapsed");
-            }
-        };
+      if (shouldClose) {
+        overlay.classList.add("mobile-overlay-collapsed");
+      } else {
+        overlay.classList.remove("mobile-overlay-collapsed");
+      }
+    };
 
-        const updateScrollProgress = () => {
-            if (!scrollProgress) return;
-            const scrollTop = window.scrollY || document.documentElement.scrollTop;
-            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            const scrollPercent = (scrollTop / scrollHeight) * 100;
-            scrollProgress.style.width = `${scrollPercent}%`;
-        };
+    const updateScrollProgress = () => {
+      if (!scrollProgress) return;
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrollPercent = (scrollTop / scrollHeight) * 100;
+      scrollProgress.style.width = `${scrollPercent}%`;
+    };
 
-        // --- Event Handlers ---
-        const handleToggleClick = (e: Event) => {
-            e.stopPropagation();
-            toggleMenu();
-        };
+    // --- Event Handlers ---
+    const handleToggleClick = (e: Event) => {
+      e.stopPropagation();
+      toggleMenu();
+    };
 
-        const handleLinkClick = () => {
-            toggleMenu(true);
-        };
+    const handleLinkClick = () => {
+      toggleMenu(true);
+    };
 
-        // --- Attach Listeners ---
-        toggle.addEventListener('click', handleToggleClick);
-        mobileLinks.forEach(link => link.addEventListener('click', handleLinkClick));
-        window.addEventListener('scroll', updateScrollProgress);
-        window.addEventListener('resize', updateScrollProgress);
+    // --- Attach Listeners ---
+    toggle.addEventListener('click', handleToggleClick);
+    mobileLinks.forEach(link => link.addEventListener('click', handleLinkClick));
+    window.addEventListener('scroll', updateScrollProgress);
+    window.addEventListener('resize', updateScrollProgress);
+    window.addEventListener('resize', () => {
+      toggleMenu(true);
+    });
 
-        // --- Cleanup (Crucial for ViewTransitions) ---
-        document.addEventListener('astro:before-swap', () => {
-            toggle.removeEventListener('click', handleToggleClick);
-            mobileLinks.forEach(link => link.removeEventListener('click', handleLinkClick));
-            window.removeEventListener('scroll', updateScrollProgress);
-            window.removeEventListener('resize', updateScrollProgress);
-            body.style.overflow = ''; // Ensure scroll is unlocked
-        }, {once: true});
-    }
+    // --- Cleanup (Crucial for ViewTransitions) ---
+    document.addEventListener('astro:before-swap', () => {
+      toggle.removeEventListener('click', handleToggleClick);
+      mobileLinks.forEach(link => link.removeEventListener('click', handleLinkClick));
+      window.removeEventListener('scroll', updateScrollProgress);
+      window.removeEventListener('resize', updateScrollProgress);
+      body.style.overflow = ''; // Ensure scroll is unlocked
+    }, {once: true});
+  }
 
-    // Initialize on page load (runs on initial load AND after navigation)
-    document.addEventListener('astro:page-load', initNavbar);
+  // Initialize on page load (runs on initial load AND after navigation)
+  document.addEventListener('astro:page-load', initNavbar);
 </script>

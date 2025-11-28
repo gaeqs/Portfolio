@@ -1,0 +1,29 @@
+---
+interface Props {
+  title: string;
+  color?: "cyan" | "purple" | "green" | "orange" | "red" | "blue";
+}
+
+const {title, color = "cyan"} = Astro.props;
+
+const colorMap = {
+  cyan: "text-cyan-500 hover:border-cyan-500/30",
+  purple: "text-purple-500 hover:border-purple-500/30",
+  green: "text-green-500 hover:border-green-500/30",
+  orange: "text-orange-500 hover:border-orange-500/30",
+  red: "text-red-500 hover:border-red-500/30",
+  blue: "text-blue-500 hover:border-blue-500/30",
+};
+
+const accentClass = colorMap[color];
+---
+
+<div class={`bg-zinc-900/50 p-5 rounded-lg border border-white/5 transition-colors ${accentClass} not-prose`}>
+  <h3 class="text-zinc-100 font-bold text-lg mb-2 flex items-center gap-2">
+    <span class={colorMap[color].split(" ")[0]}>::</span>
+    {title}
+  </h3>
+  <div class="text-zinc-400 text-sm leading-relaxed">
+    <slot/>
+  </div>
+</div>

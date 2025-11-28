@@ -1,0 +1,212 @@
+---
+layout: /src/layouts/ProjectLayout.astro
+title: 'Neon Engine'
+pubDate: 2023-07-20
+description: 'A high-performance C++20/Vulkan graphics engine featuring a custom ECS, Mesh Shaders, and a bindless resource architecture.'
+languages: [ cpp, vulkan, glsl, cmake ]
+image:
+ url: "/images/projects/Neon/image_1.png"
+ alt: "Neon"
+github: "https://github.com/gaeqs/Neon"
+---
+
+import FeatureCard from '/src/components/ui/FeatureCard.astro'
+import Challenge from '/src/components/ui/Challenge.astro'
+import Gallery from '/src/components/ui/Gallery.astro'
+import Figure from '/src/components/ui/Figure.astro'
+
+Neon is a comprehensive multiplatform graphics engine engineered from the ground up using **C++20**
+and **Vulkan**.
+Unlike generic rendering frameworks, Neon provides a robust, type-safe API designed for scalability,
+capable of handling scenes with millions of instances where traditional engines falter.
+
+It bridges the gap between low-level GPU control and high-level application logic,
+featuring a custom **Entity-Component-System (ECS)** optimized for spatial locality,
+a fully asynchronous asset management pipeline, and an intelligent render
+path that prioritizes *geometry instancing*.
+
+
+<Gallery images={[
+    {
+        src: "/images/projects/Neon/image_1.png",
+        alt: "Visualization of a brain's activity using ViSimpl with Neon as a backend - 13M Particles Render"
+    },
+    {src: "/images/projects/Neon/light.png", alt: "Scene with 16000 instances of the same mode."},
+    {src: "/images/projects/Neon/neoneuron.png", alt: "Neoneuron - a neural network visualization tool using Neon"},
+]}/>
+
+## Core Features
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 not-prose my-8">
+    <FeatureCard title="Vulkan-First Architecture">
+        Built strictly on Vulkan to leverage modern GPU features.
+        It abstracts the complexity of synchronization and memory barriers
+        while keeping the performance benefits of low-level access.
+    </FeatureCard>
+
+    <FeatureCard title="Smart Instancing" color="purple">
+        A core rendering philosophy based on **Geometry Instancing**.
+        Neon automatically manages instance memory, uploading only the smallest
+        range of modified data to the GPU to minimize bandwidth usage.
+    </FeatureCard>
+
+    <FeatureCard title="Clustered Memory ECS" color="green">
+        Implements `ClusteredLinkedCollection`, a custom data structure
+        that ensures components are contiguous in memory while allowing dynamic
+        expansion via linked memory blocks.
+    </FeatureCard>
+
+    <FeatureCard title="Runtime Shader compilation" color="orange">
+        Includes an integrated compiler stack (glslang & SPIRV-Tools)
+        allowing developers to write, modify, and compile GLSL shaders to SPIR-V at runtime without external tools.
+    </FeatureCard>
+
+    <FeatureCard title="Integrated ImGUI Editor" color="red">
+        Features a fully functional, dockable editor built using **ImGUI**.
+        Includes a live scene graph, entity inspector, and real-time property modification for rapid prototyping and
+        debugging.
+    </FeatureCard>
+
+    <FeatureCard title="Async Task System" color="blue">
+        A custom TaskRunner and thread pool system that offloads heavy operations (like model loading) to background
+        threads, ensuring **zero stalls** on the main render thread.
+    </FeatureCard>
+</div>
+
+## The Tech Stack
+
+Neon's stack was selected to maximize modern C++ features and maintain low-level control over the hardware.
+
+| Component    | Technology     | Reasoning                                                  |
+|:-------------|:---------------|:-----------------------------------------------------------|
+| **Language** | C++20          | Utilizing Concepts, Ranges, and Smart Pointers for safety. |
+| **Graphics** | Vulkan 1.3     | For Bindless Descriptors and Mesh Shader support.          |
+| **Shaders**  | GLSL -> SPIR-V | Can be compile online or offline.                          |
+| **Math**     | Rush (Custom)  | Written from scratch for specific SIMD optimizations.      |
+| **Build**    | CMake & Vcpkg  | For cross-platform dependency management.                  |
+
+## Technical Architecture
+
+Neon’s architecture is defined by its modular lifecycle and strict memory management strategies.
+
+### 1. Memory Management: The `ClusteredLinkedCollection`
+Standard `std::vector` implementations suffer from pointer invalidation upon resizing. Neon solves this with **`ClusteredLinkedCollection`**, a hybrid structure composed of linked fixed-size memory blocks.
+
+* **Spatial Locality:** Elements within a block are contiguous, maximizing CPU cache hits during iteration.
+* **Pointer Stability:** Memory addresses remain valid throughout the object's lifecycle, allowing safe referencing between components.
+* **Lifecycle Optimization:** The engine uses a template-based structure, `ComponentImplementedEvents`, to detect at compile-time which lifecycle methods (e.g., `onUpdate`, `onLateUpdate`) a component overrides, avoiding unnecessary virtual calls during the loop.
+
+### 2. The Rendering Pipeline
+Neon is designed around **Instancing**. When an object requests a model,
+it reserves a small memory space within the model's instance buffer.
+The engine tracks changes and, during the `draw` phase, uploads *only* the modified memory regions to the GPU.
+This allows rendering scenes with **13+ million active particles** with a performance up to
+**5x higher** than equivalent OpenGL implementations.
+
+## Performance Benchmarks
+
+<Figure src="/images/projects/Neon/neuron.gif" caption="Visualization of a brain's activity using ViSimpl with Neon as a backend" />
+
+To validate the engine's architecture, Neon was integrated into **ViSimpl**, a neuroscience visualization tool, replacing its legacy OpenGL engine.
+
+| Metric | OpenGL Legacy | Neon (Vulkan) | Improvement |
+| :--- | :--- | :--- | :--- |
+| **13M Particles (Avg)** | ~180ms | ~35ms | **5.1x Faster**  |
+| **Stability (1% Lows)** | Severe spikes | Consistent | **Reduced Stutter** |
+| **CPU Overhead** | High (Driver overhead) | Low (Batching) | **Efficient** |
+
+## Implementation Details
+
+Neon leverages **C++20 Concepts** to enforce type safety without the verbosity of SFINAE. Below is an example of the user-facing API for creating logic components. Note the clean syntax and lack of boilerplate.
+
+```cpp
+// RotatorComponent.h
+#include <neon/structure/Component.h>
+#include <rush/Rush.h>
+
+class RotatorComponent : public neon::Component {
+public:
+    rush::Vec3f rotationAxis = {0, 1, 0};
+    float speed = 1.0f;
+
+    void onUpdate(float deltaTime) override {
+        // Direct access to the optimized transform component (contiguous memory)
+        auto& transform = getGameObject()->getTransform();
+
+        // Applying rotation using custom math library
+        transform.rotate(rotationAxis, speed * deltaTime);
+    }
+};
+
+// Automatic registration for reflection and serialization systems
+REGISTER_COMPONENT(RotatorComponent, "Rotator")
+```
+
+## Challenges & Solutions
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 not-prose my-8">
+
+    <Challenge title="Rendering Pipeline Bottlenecks">
+        <p slot="challenge">
+            Loading high-fidelity assets (4K textures, high-poly models) typically freezes the main thread, causing
+            noticeable frame drops.
+        </p>
+        <div slot="solution">
+            Implementing a **Virtual File System** paired with a TaskRunner. Assets are mapped, loaded,
+            and processed in a background thread pool. A thread-safe <code>AssetCollection</code>
+            registry manages their lifetime, ensuring resources are only
+            uploaded to the GPU via a transfer queue when fully ready.
+        </div>
+    </Challenge>
+
+    <Challenge title="Memory Fragmentation">
+        <p slot="challenge">
+            Traditional object-oriented hierarchies (pointer chasing) often lead to severe
+            cache misses, bottlenecking the CPU during the physics and logic steps.
+        </p>
+        <div slot="solution">
+            The ECS was designed to prioritize **Data Locality**. By storing active components in contiguous memory
+            arrays and utilizing custom allocators (minimizing <code>new</code>/<code>delete</code> calls), the engine
+            minimizes heap fragmentation and maximizes L1/L2 cache hits during the <code>OnUpdate</code> loop.
+        </div>
+    </Challenge>
+
+    <Challenge title="Optimization of Lifecycle Iterations">
+        <p slot="challenge">
+            Iterating over thousands of components where many do not implement every lifecycle method (like
+            `onLateUpdate`) wastes significant CPU cycles on empty virtual calls.
+        </p>
+        <div slot="solution">
+            Implementing **`ComponentImplementedEvents`**, a template metaprogramming structure that detects overridden
+            methods at compile time. Neon only iterates over the collections of components that actually implement the
+            specific lifecycle stage.
+        </div>
+    </Challenge>
+
+    <Challenge title="Efficient Data Transfer">
+        <p slot="challenge">
+            Uploading the entire instance buffer to the GPU every frame creates a massive bandwidth bottleneck,
+            especially in scenes with millions of static or semi-static objects.
+        </p>
+        <div slot="solution">
+            Implementing a **Dirty Range Tracker**. The engine calculates the smallest contiguous memory range that
+            encompasses all modified instances and only uploads that specific slice to the GPU, making the operation
+            transparent to the developer.
+        </div>
+    </Challenge>
+</div>
+
+<Gallery images={[
+    {src: "/images/projects/Neon/visimpl-neon.png", alt: "ViSimpl using Neon as a backend"},
+    {src: "/images/projects/Neon/bloom.png", alt: "Bloom Post-Processing Pass"},
+    {
+        src: "/images/projects/Neon/editor.png",
+        alt: "Editor with debug information (profiling, performance graphs, etc.)"
+    },
+    {src: "/images/projects/Neon/light.png", alt: "Scene with a lighting model"},
+    {src: "/images/projects/Neon/material.png", alt: "Cube with a custom material (parallax mapping)"},
+    {src: "/images/projects/Neon/octree.png", alt: "Octree calculation and ray hit detection"},
+    {src: "/images/projects/Neon/neoneuron2.png", alt: "Neoneuron - a neural network visualization tool using Neon"},
+    {src: "/images/projects/Neon/cloth.png", alt: "Cloth simulation using Neon's mesh editing capabilities"},
+    {src: "/images/projects/Neon/line.png", alt: "Bezier line rendering"}
+]}/>

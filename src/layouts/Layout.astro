@@ -7,13 +7,17 @@ import { ClientRouter } from "astro:transitions";
 const {
   pageTitle = "NeonMint by EFEELE 🚀",
   description = "Welcome to NeonMint by EFEELE, where I develop software and share knowledge.",
-  ogimage = {
-    url: "/images/imagedefault.webp",
-    alt: "Default image of EFEELE",
-  },
+  ogimage: rawOgImage,
 } = Astro.props;
 
+const defaultImage = {
+  url: "/images/imagedefault.webp",
+  alt: "Default image of EFEELE",
+};
+
+const ogimage = rawOgImage || defaultImage;
 const siteUrl = new URL(Astro.url).origin;
+
 const SEO = {
   sitename: "NeonMint by EFEELE🚀",
   url: siteUrl,

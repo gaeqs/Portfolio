@@ -1,81 +1,128 @@
 ---
 import Layout from "./Layout.astro";
-import DatePub from "../components/blog/DatePub.astro";
-import Capsule from "../components/ui/Capsule.astro";
-import Heading from "../components/ui/Heading.astro";
-import NavArticle from "../components/layout/NavArticle.astro";
-import Contact from "../components/portfolio/Contact.astro";
+import {ArrowLeft, Calendar, CodeXml} from "@lucide/astro";
 import {Icon} from "astro-icon/components";
-const {frontmatter} = Astro.props;
----
+import {getCollection} from "astro:content";
+import Contact from "../components/portfolio/Contact.astro";
 
+const [staticData] = await getCollection('staticData');
+
+const {frontmatter} = Astro.props;
+
+const formatDate = (date: string | Date) => {
+  return new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+  });
+};
+---
 
 <Layout
         pageTitle={frontmatter.title}
         description={frontmatter.description}
         ogimage={frontmatter.image}
 >
-    <section
-            class="relative mx-auto px-8 max-sm:px-4 flex flex-row justify-center gap-6"
+  <div class="max-w-7xl mx-auto px-6 py-12 lg:py-20">
+    <!-- Top Navigation (Context) -->
+    <a
+            href="/#projects"
+            class="inline-flex items-center gap-2 text-zinc-500 hover:text-cyan-400 font-mono text-sm mb-12 transition-colors group"
     >
-        <div class="w-64 max-xl:hidden"></div>
-        <article
-                class="flex flex-col gap-8 max-w-5xl max-md:w-full pb-10 pt-8 mt-8 px-14 max-md:px-10 max-sm:px-4
-                dark:bg-transparent bg-white dark:border-0 border border-neutral-100 rounded-2xl"
-        >
-            <header class="flex flex-col gap-4" id="start">
-                <div class="flex gap-2 flex-wrap">
-                    {
-                        frontmatter.languages.map((language: string) => (
-                                <Capsule linkEnabled={true} lang={language}/>
-                        ))
-                    }
+      <ArrowLeft class="w-4 h-4 group-hover:-translate-x-1 transition-transform"/>
+      <span>INDEX_RETURN</span>
+    </a>
+
+    <!-- Header (Abstract) -->
+    <header class="mb-16">
+      <h1 class="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">
+        {frontmatter.title}
+      </h1>
+      <p class="text-xl text-zinc-400 leading-relaxed max-w-3xl mb-10">
+        {frontmatter.description}
+      </p>
+
+      {
+        frontmatter.image?.url && (
+                      <div class="relative w-full aspect-video md:aspect-[21/9] rounded-xl overflow-hidden border border-white/10 bg-zinc-900">
+                        <img
+                                src={frontmatter.image.url}
+                                alt={frontmatter.image.alt || frontmatter.title}
+                                class="w-full h-full object-cover"
+                        />
+                        <div class="absolute inset-0 bg-gradient-to-t from-zinc-950/50 to-transparent pointer-events-none"></div>
+                      </div>
+        )
+      }
+    </header>
+
+    <!-- Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-12 lg:gap-20 justify-stretch">
+
+      <!-- Left Column: The Prose -->
+      <article class="order-1 lg:order-[-1] min-w-0 break-words prose prose-invert prose-zinc max-w-none prose-headings:font-bold
+       prose-headings:tracking-tight prose-a:text-cyan-400 prose-a:no-underline hover:prose-a:underline
+       prose-img:rounded-lg prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-white/10">
+        <slot/>
+      </article>
+
+      <!-- Right Column: Sidebar (Metadata) -->
+      <aside class="space-y-8 lg:sticky lg:top-32 h-fit">
+
+        <!-- Project Details -->
+        <div class="space-y-6 p-6 bg-zinc-900/30 border border-white/5 rounded-xl backdrop-blur-sm">
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4 border-b border-white/5 pb-2">
+            Project Data
+          </h3>
+
+          <div class="space-y-4">
+            {frontmatter.pubDate && (
+                    <div class="flex items-start gap-3 text-zinc-400">
+                      <Calendar class="w-5 h-5 text-zinc-500 mt-0.5"/>
+                      <div>
+                        <p class="text-xs font-mono text-zinc-500 uppercase">Date</p>
+                        <p class="text-sm font-medium text-zinc-300">{formatDate(frontmatter.pubDate)}</p>
+                      </div>
+                    </div>
+            )}
+
+            {frontmatter.github && (
+                    <div class="flex items-start gap-3 text-zinc-400">
+                      <Icon name={staticData.data.githubIconName} class="w-5 h-5 text-zinc-500 mt-0.5"/>
+                      <div>
+                        <p class="text-xs font-mono text-zinc-500 uppercase">Repository</p>
+                        <a
+                                href={frontmatter.github}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="text-sm font-medium text-cyan-400 hover:text-cyan-300 transition-colors"
+                        >
+                          View Source
+                        </a>
+                      </div>
+                    </div>
+            )}
+          </div>
+        </div>
+
+        <!-- Tech Stack -->
+        {frontmatter.languages && frontmatter.languages.length > 0 && (
+                <div class="space-y-4">
+                  <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <CodeXml class="w-4 h-4 text-cyan-500"/>
+                    Tech Stack
+                  </h3>
+                  <div class="flex flex-wrap gap-2">
+                    {frontmatter.languages.map((lang: string) => (
+                            <span class="px-2.5 py-1 text-xs font-mono text-zinc-300 bg-zinc-800/50 border border-white/10 rounded hover:border-cyan-500/30 hover:text-cyan-300 transition-colors cursor-default">
+                  {lang}
+                </span>
+                    ))}
+                  </div>
                 </div>
+        )}
 
-                <div class="flex items-center gap-4 text-blacktext dark:text-zinc-300">
-                    {
-                        frontmatter?.github && (
-                                    <a
-                                            class="hover:text-mint-300 hover:scale-150 transition-all"
-                                            target="_blank"
-                                            href={frontmatter.github}
-                                            rel="noopener noreferrer"
-                                            aria-label="Link to GitHub"
-                                    >
-                                        <Icon name="github" aria-hidden="true" size={32}/>
-                                    </a>
-                        )
-                    }
-                    <Heading text={frontmatter.title}/>
-                </div>
-
-
-            </header>
-
-            <figure class="h-fit">
-                {
-                    frontmatter.image?.url && (
-                                <img
-                                        class="w-full rounded-xl h-128 object-cover"
-                                        src={frontmatter.image.url}
-                                        alt={frontmatter.image.alt || "Article image"}
-                                />
-                    )
-                }
-            </figure>
-
-            <div class="markdown " id="content">
-                <slot/>
-            </div>
-
-        </article>
-        <NavArticle title={frontmatter.title}/>
-    </section>
-    <div
-            class="flex flex-col gap-6 max-w-4xl max-lg:py-2 py-3 max-xl:py-2 mx-auto"
-    >
-
+      </aside>
 
     </div>
-    <Contact/>
+  </div>
 </Layout>

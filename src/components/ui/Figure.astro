@@ -1,0 +1,26 @@
+---
+interface Props {
+  src: string;
+  alt: string;
+  caption?: string;
+  fullWidth?: boolean;
+}
+
+const { src, alt, caption, fullWidth = false } = Astro.props;
+---
+
+<figure class={`my-12 not-prose ${fullWidth ? '-mx-6 lg:-mx-12' : ''}`}>
+  <div class="rounded-xl overflow-hidden border border-white/10 bg-zinc-900/50 shadow-sm shadow-black/20">
+    <img
+            src={src}
+            alt={alt}
+            class="w-full h-auto object-cover"
+            loading="lazy" />
+  </div>
+
+  {caption && (
+          <figcaption class="mt-4 text-center text-xs font-mono text-zinc-500 uppercase tracking-wider">
+            ▲ {caption}
+          </figcaption>
+  )}
+</figure>
