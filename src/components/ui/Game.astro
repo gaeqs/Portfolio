@@ -1,0 +1,72 @@
+---
+interface Props {
+  src: string;
+  poster: string;
+  title?: string;
+  height?: string;
+}
+
+const { src, poster, title = "Playable Demo", height = "aspect-video" } = Astro.props;
+---
+
+<div class="my-12 not-prose">
+  <div class="relative w-full rounded-xl overflow-hidden border border-white/10 bg-zinc-900 shadow-2xl group">
+
+    <div class="flex items-center justify-between px-4 py-2 bg-zinc-950/80 border-b border-white/5 backdrop-blur">
+      <div class="flex items-center gap-2">
+        <div class="flex gap-1.5">
+          <div class="w-2.5 h-2.5 rounded-full bg-red-500/20"></div>
+          <div class="w-2.5 h-2.5 rounded-full bg-yellow-500/20"></div>
+          <div class="w-2.5 h-2.5 rounded-full bg-green-500/20"></div>
+        </div>
+        <span class="text-xs font-mono text-zinc-500 ml-2 uppercase tracking-wider">{title}</span>
+      </div>
+      <div class="text-[10px] font-mono text-zinc-600">WEBGL CONTEXT</div>
+    </div>
+
+    <div
+            class={`relative w-full ${height} bg-zinc-950 game-container`}
+            data-src={src}
+    >
+      <div class="poster absolute inset-0 z-10 flex items-center justify-center bg-cover bg-center transition-all duration-500" style={`background-image: url('${poster}');`}>
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-[2px] group-hover:backdrop-blur-none transition-all"></div>
+
+        <button class="play-btn relative z-20 flex flex-col items-center gap-4 group/btn bg-zinc-900/80 rounded">
+          <span class="font-mono text-sm text-cyan-400 font-bold uppercase tracking-widest px-3 py-1 rounded border border-cyan-500/30">
+            Click to Run
+          </span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const containers = document.querySelectorAll('.game-container');
+
+    containers.forEach(container => {
+      const btn = container.querySelector('.play-btn');
+      const poster = container.querySelector('.poster');
+      const src = container.getAttribute('data-src');
+
+      btn?.addEventListener('click', () => {
+        console.log('Playing game...');
+        if (!src) return;
+        console.log(src);
+
+        const iframe = document.createElement('iframe');
+        iframe.src = src;
+        iframe.className = "absolute inset-0 w-full h-full border-0";
+        iframe.allow = "autoplay; fullscreen; focus-without-user-activation";
+        iframe.setAttribute('tabindex', '0');
+
+        poster.classList.add('opacity-0', 'pointer-events-none');
+        container.appendChild(iframe);
+
+        setTimeout(() => iframe.focus(), 100);
+      });
+    });
+  });
+</script>

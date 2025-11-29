@@ -1,0 +1,76 @@
+---
+layout: /src/layouts/ProjectLayout.astro
+title: 'Block Dasher'
+pubDate: 2021-06-15
+description: 'A grid-based puzzle adventure developed with Unity. Features custom grid movement logic, parity-based puzzles, and multi-platform support (WebGL/Android).'
+languages: [ unity, c-sharp, game-dev, team-project ]
+image:
+  url: "/images/projects/BlockDasher/block-dasher-1.png"
+  alt: "Block Dasher Gameplay"
+github: "https://github.com/Slow-Heat-Index/BlockDasher"
+featured: false
+priority: 1
+---
+import BrowserWindow from '/src/components/ui/BrowserWindow.astro'
+import FeatureCard from '/src/components/ui/FeatureCard.astro'
+import Challenge from '/src/components/ui/Challenge.astro'
+import Gallery from '/src/components/ui/Gallery.astro'
+import Figure from '/src/components/ui/Figure.astro'
+import Video from '/src/components/ui/Video.astro'
+import Game from '/src/components/ui/Game.astro'
+
+**Block Dasher** is a 3D puzzle adventure game developed by the *Slow Heat Index* collective. As the **Core Developer**, my role was to architect the underlying systems that drove the gameplay, enabling the designers to build complex levels without touching code.
+
+The game challenges players to navigate grid-based levels where movement is restricted by a "parity rule" (moving 2 blocks at a time), requiring spatial reasoning to solve environmental puzzles across diverse biomes.
+
+<Game
+    src="/game/blockdasher/index.html"
+    title="Block Dasher" poster="/images/projects/BlockDasher/block-dasher-background.jpg"
+/>
+
+## Engineering the Mechanics
+
+Unlike standard platformers that use Unity's physics engine for movement, Block Dasher required a deterministic, grid-locked movement system to ensure puzzles were solvable and consistent.
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
+    <FeatureCard title="Custom Grid Physics" color="cyan">
+        Implemented a **discrete movement controller** that bypasses standard physics. It handles "hop" animations, grid
+        snapping, and collision detection logic based on a virtual coordinate system, not just colliders.
+    </FeatureCard>
+
+    <FeatureCard title="The Parity System" color="purple">
+        The core mechanic involves changing the player's "step size" (1 vs 2 blocks) dynamically. This required a
+        flexible **State Machine** to handle transitions between movement modes without breaking the grid alignment.
+    </FeatureCard>
+
+    <FeatureCard title="Level Design Tooling" color="green">
+        Developed custom **Unity Editor Inspectors** to help designers tag blocks, set up parity-switchers, and define
+        win conditions visually, speeding up the level creation pipeline.
+    </FeatureCard>
+
+    <FeatureCard title="Cross-Platform Input" color="orange">
+        Abstracted the input layer to support both **Keyboard (WASD)** for PC and **Swipe Gestures** for
+        Android/Touchscreens seamlessly.
+    </FeatureCard>
+</div>
+
+<Gallery images={[
+    {src: "/images/projects/BlockDasher/block-dasher-beach.png", alt: "Beach biome"},
+    {src: "/images/projects/BlockDasher/block-dasher-desert.png", alt: "Desert biome"},
+    {src: "/images/projects/BlockDasher/block-dasher-forest.png", alt: "Garden biome"}
+]}/>
+
+## Promotional Website
+
+To maximize reach and accessibility, we decided against relying solely on downloadable binaries.
+I built a dedicated **Landing Page** hosted on GitHub Pages that serves as the central hub for the project.
+
+The site was designed to reflect the game's minimal aesthetic and acts
+as a press kit, displaying high-resolution renders and the art direction
+context that is often lost in a small game window.
+
+<BrowserWindow
+    url="https://slow-heat-index.github.io/"
+    src="/images/projects/BlockDasher/block-dasher-web.png"
+    alt="Block Dasher Official Website"
+/>

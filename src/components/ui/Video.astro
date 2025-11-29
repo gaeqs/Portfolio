@@ -5,19 +5,94 @@ interface Props {
 }
 const { src, caption } = Astro.props;
 ---
-<figure class="my-12 not-prose rounded-xl overflow-hidden border border-white/10 bg-zinc-900 shadow-2xl">
-  <video
-          class="w-full h-auto"
-          autoplay
-          loop
-          muted
-          playsinline
-  >
-    <source src={src} type="video/mp4" />
-  </video>
+
+<figure class="group relative my-12 not-prose rounded-xl overflow-hidden border border-white/10 bg-zinc-900 shadow-2xl">
+
+  <div class="relative w-full">
+    <video
+            class="w-full h-auto"
+            loop
+            muted
+            playsinline
+            preload="metadata"
+            poster={`${src.replace('.mp4', '.jpg')}`}
+    >
+      <source src={src} type="video/mp4" />
+    </video>
+
+    <button
+            class="play-btn absolute inset-0 z-10 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors cursor-pointer group-hover:opacity-100 transition-opacity duration-300"
+            aria-label="Play video"
+    >
+      <div class="w-16 h-16 bg-zinc-950/80 backdrop-blur-md rounded-full flex items-center justify-center border border-white/10 shadow-lg scale-90 transition-transform group-hover:scale-100">
+        <svg class="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M8 5v14l11-7z" />
+        </svg>
+      </div>
+    </button>
+  </div>
+
   {caption && (
           <figcaption class="p-3 text-center text-xs font-mono text-zinc-500 uppercase tracking-wider bg-zinc-950/50 border-t border-white/5">
             ▲ {caption}
           </figcaption>
   )}
 </figure>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const videos = document.querySelectorAll('video');
+    const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+
+    videos.forEach((video) => {
+      const container = video.parentElement;
+      const playBtn = container?.querySelector('.play-btn');
+
+      const updateState = () => {
+        if (video.paused) {
+          playBtn?.classList.remove('hidden');
+          playBtn?.classList.remove('opacity-0');
+        } else {
+          playBtn?.classList.add('opacity-0'); // Fade out suave
+          setTimeout(() => playBtn?.classList.add('hidden'), 300);
+        }
+      };
+
+      if (isDesktop) {
+        video.muted = true;
+        const attemptPlay = async () => {
+          try {
+            await video.play();
+            updateState();
+          } catch (e) {
+            console.log("Desktop autoplay blocked (user setting or battery saver).");
+            updateState();
+          }
+        };
+        attemptPlay();
+      } else {
+        console.log("Mobile detected: Autoplay disabled to save data/battery.");
+      }
+
+      const togglePlay = (e: Event) => {
+        e.stopPropagation();
+        if (video.paused) {
+          video.muted = false;
+          video.play();
+        } else {
+          video.pause();
+        }
+        updateState();
+      };
+
+      playBtn?.addEventListener('click', togglePlay);
+      video.addEventListener('click', togglePlay);
+
+      video.addEventListener('pause', updateState);
+      video.addEventListener('play', () => {
+        playBtn?.classList.add('opacity-0');
+        setTimeout(() => playBtn?.classList.add('hidden'), 300);
+      });
+    });
+  });
+</script>

@@ -8,104 +8,180 @@ image:
   url: "/images/projects/Neoneuron/neoneuron.png"
   alt: "Neoneuron"
 github: "https://github.com/gaeqs/Neoneuron"
+paper: "/pdf/neoneuron.pdf"
+featured: true
 ---
 
 import FeatureCard from '/src/components/ui/FeatureCard.astro'
 import Challenge from '/src/components/ui/Challenge.astro'
 import Gallery from '/src/components/ui/Gallery.astro'
 import Figure from '/src/components/ui/Figure.astro'
+import Video from '/src/components/ui/Video.astro'
 
+**Neoneuron** represents the practical validation of my Ph.D. Thesis:
+a novel **generic methodology** for high-performance geometry generation.
 
-**Neoneuron** represents the culmination of my Ph.D. research: a paradigm shift in how biological structures are rendered.
+The core research addresses a universal challenge in computer graphics:
+generating high-fidelity meshes from compact representations without exhausting GPU memory.
+I developed a pipeline based on **Mesh Shaders** capable of constructing *any* complex,
+branching topology entirely on the GPU, bypassing the limitations of traditional pre-computed meshes.
 
-Traditional visualization methods rely on pre-computed meshes, which consume massive amounts of VRAM and lack flexibility. This project introduces a **GPU-Driven Procedural Pipeline** utilizing the modern **Mesh Shader** architecture to generate geometry on-the-fly from compact skeletal descriptions.
+To stress-test this general-purpose architecture, I developed **Neoneuron** as a demanding use case.
+Neuronal morphologies, with their intricate, recursive branching and massive scale, serve as the ultimate
+benchmark to demonstrate that this procedural approach offers superior scalability and flexibility
+compared to standard rendering techniques.
 
-<Figure
-    src="/images/projects/Neoneuron/neuron.gif"
+<Video
+    src="/images/projects/Neoneuron/rotation.mp4"
     alt="Neoneuron Real-time Simulation"
-    caption="Real-time procedural generation of millions of neuronal segments directly on the GPU."
+    caption=" Real-time procedural generation of millions of neuronal segments directly on the GPU."
     fullWidth={true}
-/>
+>
+</Video>
 
-## The Core Innovation: "The Schemlet"
+## The Core Innovation: *The Schemlet*
 
-The central contribution of this research is the **Schemlet**[cite: 354]. Unlike a meshlet (which stores geometry), a Schemlet is a **blueprint**. It is a lightweight, symbolic instruction packet that tells the GPU *how* to build a part of the neuron.
+The central contribution of this research is the **Schemlet**. Unlike a meshlet (which stores geometry),
+a Schemlet is a **blueprint**. It is a lightweight, symbolic instruction packet that tells
+the GPU *how* to build a part of the neuron.
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-8">
+<div class=" grid grid-cols-1 md:grid-cols-3 gap-4 my-8">
     <FeatureCard title="1. Symbolic Data" color="blue">
-        Instead of storing vertices, we store **morphological data**: start/end points, radii, and parent indices. This reduces memory footprint by **up to 38x** compared to explicit meshes[cite: 505].
+        Instead of storing vertices, we store **morphological data**: start / end points, radii, and parent
+        indices.This
+        reduces memory footprint by **up to 38x** compared to explicit meshes.
     </FeatureCard>
 
     <FeatureCard title="2. Task Shader Filtering" color="purple">
-        Before generation, **Task Shaders** analyze Schemlets in parallel. They perform aggressive frustration culling and calculate continuous **Level of Detail (LOD)** factors per segment[cite: 432].
+        Before generation, **Task Shaders** analyze Schemlets in parallel. They perform aggressive frustration culling
+        and calculate continuous **Level of Detail (LOD)** factors per segment.
     </FeatureCard>
 
     <FeatureCard title="3. Mesh Shader Synthesis" color="orange">
-        Visible Schemlets are expanded into geometry by **Mesh Shaders**. The GPU procedurally generates tubes (neurites) and deformed spheres (somas) just in time for rasterization[cite: 458].
+        Visible Schemlets are expanded into geometry by **Mesh Shaders**. The GPU procedurally generates tubes
+        (neurites) and deformed spheres (somas) just in time for rasterization.
     </FeatureCard>
 </div>
 
 ## Scientific Methodology
 
-The pipeline replaces the traditional Input Assembler with a compute-like structure tailored for biology.
+The methodology redefines the rendering pipeline, replacing the traditional
+Input Assembler with a compute-driven architecture tailored for biological structures. The process is divided into three distinct stages:
 
-### 1. Ingestion & Decomposition
-The CPU is only responsible for decomposing the neuronal skeleton (SWC format) into a flat array of Schemlets: **Segment**, **Bifurcation**, and **Soma**[cite: 421]. This ensures the "Decoupled Procedural Logic" principle[cite: 324].
+### 1. Ingestion & Decomposition (CPU)
+The CPU's role is minimized to a one-time preprocessing step. It ingests the raw neuronal skeleton
+and decomposes the hierarchical tree into a **flat, cache-friendly array** of Schemlets.
+* **Geometric Pre-calculation:** Critical static data is computed offline. For segments,
+a modified **Ramer-Douglas-Peucker** algorithm assigns an importance value to each control point for efficient LOD culling.
+* **Topological Solving:** For bifurcations, optimal division angles are pre-solved to ensure seamless
+branching angles before the data ever reaches the GPU.
 
-### 2. The Bifurcation Problem
-One of the hardest challenges in procedural mesh generation is creating watertight joints at branching points.
-Neoneuron solves this by pre-calculating optimal division angles and letting the Mesh Shader generate a seamless "patch" that stitches the parent and child segments, guaranteeing **crack-free geometry** even at varying LODs[cite: 428, 450].
+### 2. Task Shader Evaluation (GPU)
+Before any vertex is processed, **Task Shaders** act as a high-performance dynamic filter. Each workgroup evaluates a batch of Schemlets in a two-phase process:
+* **Universal Culling:** A bounding box is dynamically computed for each Schemlet and tested against the camera frustum. Invisible sections are discarded instantly, saving rasterization power.
+* **Adaptive LOD Calculation:** For visible schemlets, a continuous Level of Detail factor is calculated based on screen-space metrics. This determines the exact vertex density (e.g., from 4 to 16 radial vertices) required for the next stage.
+
+### 3. Mesh Shader Synthesis (GPU)
+This is where the symbolic **Schemlet** expands into explicit geometry. The Mesh Shader employs a collaborative workflow where threads share calculated data via **Workgroup Shared Memory** to avoid redundant VRAM accesses.
+
+* **The Bifurcation Solver:** One of the hardest challenges is creating watertight joints. The Bifurcation logic matches the vertex density of the parent and child segments dynamically, generating a procedural "patch" that sutures the three tubes together without cracks.
+* **Soma Deformation:** The cell body is generated as a tessellated sphere. A deformation algorithm is applied in real-time, where the sphere's vertices are weighted and pulled towards the neurite connection points, simulating an organic membrane structure.
 
 <Gallery images={[
-    { src: "/images/projects/Neoneuron/bifurcation_wireframe.jpg", alt: "Procedural Bifurcation Topology (Fig. 5)" },
-    { src: "/images/projects/Neoneuron/soma_lod.jpg", alt: "Adaptive Soma Tessellation (Fig. 4)" },
-    { src: "/images/projects/Neoneuron/lod_segments.jpg", alt: "Continuous Level of Detail (Fig. 3)" },
-]} />
+    {src: "/images/projects/Neoneuron/soma_lod.png", alt: "Adaptive Soma Tessellation"},
+    {src: "/images/projects/Neoneuron/bifurcation.png", alt: "Procedural Bifurcation Topology (Fig. 5)"},
+    {src: "/images/projects/Neoneuron/segment_lod.png", alt: "Continuous Level of Detail (Fig. 3)"},
+]}/>
 
 ## Research Results
 
-The methodology was validated against industry-standard tools like **NeuroTessMesh** and **Neuronize**. The results demonstrate that proceduralism is superior for large-scale visualization.
+The methodology was validated through a demanding neuroscience use case involving the real-time generation of detailed neuronal morphologies.
+We conducted extensive benchmarks comparing **Neoneuron** against state-of-the-art tools like *NeuroTessMesh* and *Neuronize*.
 
-### Memory Efficiency (VRAM)
-By discarding explicit geometry, Neoneuron drastically reduces memory pressure. In scenes where *Neuronize* consumed 15 MiB per neuron, Neoneuron used less than **0.5 MiB**[cite: 505].
+### 1. Memory Efficiency (VRAM)
+The most critical bottleneck in scientific visualization is memory. Traditional methods requiring explicit geometry storage quickly saturate VRAM.
+
+By using **Schemlets**, Neoneuron eliminates the need to store pre-generated meshes.
+The benchmarks demonstrate a drastic reduction in memory footprint:
+* **6.3x** more efficient than *NeuroTessMesh* (Tessellation-based).
+* **38.5x** more efficient than *Neuronize* (Physics-based generation).
 
 <Figure
-    src="/images/projects/Neoneuron/vram_chart.png"
-    alt="VRAM Usage Comparison Chart (Fig. 8)"
-    caption="Comparative analysis of VRAM usage. Neoneuron (left) vs Traditional approaches."
+    src="/images/projects/Neoneuron/VRAMUsageBoxplot.png"
+    alt="Relative VRAM Usage Comparison (Fig. 8)"
+    caption="Relative VRAM memory usage per neuron. Neoneuron requires a fraction of the memory compared to explicit mesh approaches."
 />
 
-### Performance (FPS)
-Despite the heavy ALU load of generating meshes every frame, the elimination of memory bandwidth bottlenecks results in a **2x performance increase** over tessellation-based approaches like NeuroTessMesh[cite: 518].
+As shown in the distribution analysis, Neoneuron not only achieves the lowest mean memory usage
+(< 0.5 MiB per neuron) but also exhibits significantly less dispersion,
+ensuring predictable performance in large-scale scenes.
+
+### 2. Rendering Performance
+We measured the rendering throughput in frames per second (FPS)
+rendering identical complex scenes across different tools.
+
+Despite the heavy computational load of generating geometry every frame,
+Neoneuron achieves an **average FPS more than 2x higher** than *NeuroTessMesh*.
+This performance leap is attributed to the GPU-driven pipeline,
+which saturates the GPU's computational resources while eliminating the CPU-to-GPU
+bandwidth bottleneck common in hybrid approaches.
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 my-8">
+    <Figure
+        src="/images/projects/Neoneuron/Performance.png"
+        alt="FPS Distribution Chart (Fig. 9)"
+        caption="Distribution of average frame rates rending a scene with 1000 neurons. Neoneuron maintains superior performance even under heavy load."
+    />
+    <div class="flex flex-col justify-center space-y-4">
+        <div class="bg-zinc-900 p-4 rounded-lg border border-white/5">
+            <h4 class="text-zinc-400 text-xs font-mono uppercase">NeuroTessMesh</h4>
+            <p class="text-2xl font-bold text-white">~20 FPS</p>
+            <p class="text-xs text-red-400">High CPU overhead</p>
+        </div>
+        <div class="bg-zinc-900 p-4 rounded-lg border border-white/5 relative overflow-hidden">
+            <div class="absolute inset-0 bg-cyan-500/10"></div>
+            <h4 class="text-cyan-400 text-xs font-mono uppercase">Neoneuron</h4>
+            <p class="text-3xl font-bold text-white">~45 FPS</p>
+            <p class="text-xs text-cyan-300">GPU-saturated</p>
+        </div>
+    </div>
+</div>
+
+### 3. Morphological Flexibility
+Beyond raw performance, the system enables capabilities previously impossible in real-time.
+Since geometry is generated frame-by-frame,
+morphological parameters (soma radius, neurite thickness, bifurcation angles) can be modified instantly.
+
+This contrasts with pre-stored geometry techniques,
+where such changes would require a complete regeneration and re-upload of the mesh buffers, causing significant stalls.
 
 ## Challenges & Contributions
 
-<Challenge title="The Memory Wall">
-    <p slot="challenge">
-        Scientific datasets contain millions of neurons. Storing them as static OBJ/FBX models exceeds the VRAM of even high-end workstations (e.g., 38x more memory usage [cite: 505]).
-    </p>
-    <div slot="solution">
-        I shifted the paradigm from **Storage** to **Compute**. By streaming compact *Schemlets* and generating vertices only when needed, the scene size is decoupled from geometric complexity.
-    </div>
-</Challenge>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 not-prose my-8">
 
-<Challenge title="Topology Continuity">
-    <p slot="challenge">
-        Procedural meshes often suffer from "cracks" or holes when different parts (like a dendrite and a soma) meet, especially when they have different LOD levels.
-    </p>
-    <div slot="solution">
-        The **Bifurcation Schemlet** logic acts as a topological bridge. It matches the vertex density of the parent and children dynamically, creating a mathematically perfect seal[cite: 468].
-    </div>
-</Challenge>
+    <Challenge title="The Memory Wall">
+        <p slot="challenge">
+            Scientific datasets contain millions of neurons. Storing them as static OBJ/FBX models exceeds the VRAM of
+            even
+            high-end workstations (e.g., 38x more memory usage).
+        </p>
+        <div slot="solution">
+            I shifted the paradigm from **Storage** to **Compute**. By streaming compact *Schemlets* and generating
+            vertices
+            only when needed, the scene size is decoupled from geometric complexity.
+        </div>
+    </Challenge>
 
-## Citation
-
-If you find this methodology useful for your research, please cite the paper:
-
-```bibtex
-@article{rial2024methodology,
-  title={Methodology for Real-Time Generation and Visualization of Three-Dimensional Models Using Mesh Shaders},
-  author={Rial Costas, Gael and Mata, Susana and Robles Sánchez, Óscar David},
-  journal={IEEE Transactions on Visualization and Computer Graphics},
-  year={2024}
-}
+    <Challenge title="Topology Continuity">
+        <p slot="challenge">
+            Procedural meshes often suffer from "cracks" or holes when different parts (like a dendrite and a soma)
+            meet,
+            especially when they have different LOD levels.
+        </p>
+        <div slot="solution">
+            The **Bifurcation Schemlet** logic acts as a topological bridge. It matches the vertex density of the parent
+            and
+            children dynamically, creating a mathematically perfect seal.
+        </div>
+    </Challenge>
+</div>

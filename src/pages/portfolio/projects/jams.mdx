@@ -1,0 +1,286 @@
+---
+layout: /src/layouts/ProjectLayout.astro
+title: 'JAMS IDE'
+pubDate: 2022-07-15
+description: 'A modular, extensible Integrated Development Environment (IDE) architected from scratch in Java/JavaFX. Features a custom plugin system, VFS, and language server capabilities.'
+languages: [ java, javafx, kotlin, gradle, architecture ]
+image:
+  url: "/images/projects/JAMS/mips-tools.png"
+  alt: "JAMS IDE Interface"
+github: "https://github.com/gaeqs/JAMS"
+featured: true
+---
+
+import FeatureCard from '/src/components/ui/FeatureCard.astro'
+import Challenge from '/src/components/ui/Challenge.astro'
+import Gallery from '/src/components/ui/Gallery.astro'
+import Figure from '/src/components/ui/Figure.astro'
+import Video from '/src/components/ui/Video.astro'
+
+**JAMS (Just Another MIPS Simulator)** started as an educational tool but evolved into a fully-fledged
+**IDE Platform**. It represents the combined work of **two Bachelor's Theses**:
+one focused on the Core Architecture and MIPS implementation,
+and the other on the Plugin System and NES integration.
+
+My goal was not just to build a simulator, but to engineer a **generic foundation**
+capable of hosting any instruction set architecture (ISA) through a robust plugin ecosystem,
+mirroring the philosophy of platforms like **IntelliJ IDEA**.
+
+<Figure
+    src="/images/projects/JAMS/jams-collage.png"
+    caption="Showcase of the UI engine handling dynamic CSS theming, runtime localization, and docking states simultaneously."
+/>
+
+## The IDE Workspace
+
+JAMS provides a professional-grade desktop environment.
+I engineered a custom **Docking System** based on "Nodes",
+allowing users to organize their workspace dynamically.
+Tools can be anchored to the editor's edges or detached into floating windows for multi-monitor setups.
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
+    <FeatureCard title="CSS-Driven Theming" color="red">
+        The UI styling is decoupled from logic using **CSS**.
+        The theme engine supports inheritance and variable definitions (`global.css`),
+        allowing users to create and hot-swap themes (e.g., Dracula, Light, Dark)
+        without restarting.
+    </FeatureCard>
+
+    <FeatureCard title="Hot-Swappable I18n" color="blue">
+        A robust localization system based on YAML/JSON packs.
+        It supports Unicode and fallback chains, enabling instant language switching at runtime.
+    </FeatureCard>
+
+    <FeatureCard title="Context-Aware Actions" color="orange">
+        User interactions are abstracted into **Actions**.
+        The system validates context (e.g., "Can I copy here?") and handles key-binding mapping automatically,
+        similar to the Command Pattern.
+    </FeatureCard>
+
+    <FeatureCard title="Decentralized Event Bus" color="orange">
+        Inspired by Minecraft modding APIs (Spigot/Sponge).
+        Components and plugins communicate via strongly-typed events using **`@Listener` annotations**,
+        supporting cancellation flows and generic types.
+    </FeatureCard>
+</div>
+
+<Gallery images={[
+    { src: "/images/projects/JAMS/mips-tools.png", alt: "Showcase of the MIPS simulator with floating windows" },
+    { src: "/images/projects/JAMS/jams-theme.png", alt: "CSS Theming Engine: Light Mode" },
+    { src: "/images/projects/JAMS/jams-config.png", alt: "Live Configuration Interface" },
+]} />
+
+## Core Architecture: Extensibility First
+
+JAMS was architected to be more than just a MIPS simulator; it is a **generic platform** for assembly development. While it ships with a fully integrated, high-performance **MIPS32 environment** out of the box, the internal architecture exposes its core systems (Editor, Assembler pipeline, Simulation loop) through a public API.
+
+This design allows external plugins to inject new architectures that coexist seamlessly with the native MIPS environment, leveraging the same UI components and build tools.
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
+    <FeatureCard title="Native MIPS Integration" color="cyan">
+        The default MIPS32 environment is built directly on top of the core API, serving as the **reference
+        implementation** for performance and feature completeness.
+    </FeatureCard>
+
+    <FeatureCard title="The Manager Registry" color="purple">
+        Implements a **Service Locator** pattern. Core subsystems (Languages, Themes, Compilers) are
+        exposed via Managers, allowing plugins to register new implementations at runtime.
+    </FeatureCard>
+
+    <FeatureCard title="Asynchronous VFS" color="green">
+        A thread-safe **Virtual File System** abstraction that decouples the editor from the physical disk,
+        enabling features like in-memory compilation and undo/redo stacks without IO blocking.
+    </FeatureCard>
+
+    <FeatureCard title="Dynamic ClassLoading" color="orange">
+        External plugins (JARs) are loaded via isolated **URLClassLoaders**. This allows the application to
+        discover and link new modules at startup without modifying the classpath.
+    </FeatureCard>
+</div>
+
+## Advanced Editor Engineering
+
+The crown jewel of JAMS is its text editor.
+Unlike simple syntax highlighters, I implemented a full **Language Server** architecture from
+scratch on top of *RichTextFX* to support deep semantic analysis.
+
+### 1. Asynchronous MVC Architecture
+To handle large assembly files (thousands of lines) without freezing the UI thread,
+the editor uses a strict **Model-View-Controller** separation with asynchronous updates:
+* **The Model:** Implements a custom **Rope** data structure (hierarchical tree of elements)
+rather than a flat string. Elements are immutable-ish, optimizing memory for large files.
+* **The Update Loop:** Edits are batched, compressed (discarding redundant keystrokes),
+and processed on a background thread. The View is only notified when the AST is rebuilt.
+
+### 2. Semantic Analysis & Scoping
+The editor understands the code structure.
+It maintains a **Project Global Index** that tracks symbols across files in real-time.
+* **Macro Expansion:** Supports nested macros with **Scope Shadowing**.
+The discovery phase resolves symbol visibility, ensuring that a local label
+inside a macro doesn't collide with a global label.
+* **Cross-File References:** Labels defined in `utils.asm` are instantly suggested in `main.asm` via the autocompleter.
+
+<Gallery images={[
+    {src: "/images/projects/JAMS/jams-autocompletion.png", alt: "Context-aware Autocompletion popup"},
+    {src: "/images/projects/JAMS/jams-documentation.png", alt: "Live Documentation in Spanish via Ctrl+Q"},
+    {src: "/images/projects/JAMS/jams-text-editor.png", alt: "Semantic Highlighting showing macros and labels"},
+]}/>
+
+## The Assembler Pipeline: A Multi-Stage Compiler
+
+Unlike simple educational simulators that map text to hex line-by-line,
+JAMS implements a robust **4-Stage Compiler Pipeline**.
+This architecture allows for advanced features like macro overloading, scope shadowing,
+and complex mathematical expressions.
+
+#### Stage 1: Discovery (Lexical Analysis)
+The engine scans the source files to decompose text into primitives (Mnemonics, Directives, Labels).
+* **Global vs Local:** It registers global labels and identifies local scopes.
+* **Macro Signatures:** Macros are registered using a signature system (`name` + `arg_count`),
+enabling **Macro Overloading** (e.g., `print(string)` vs `print(string, int)`).
+
+#### Stage 2: Expansion (The Preprocessor)
+This is where the magic happens. Calls to macros are recursively unrolled.
+* **Scope Shadowing:** JAMS implements a hierarchical scope system.
+A local label inside a macro (e.g., `loop:`) shadows a global label with the same name, preventing symbol collisions automatically.
+* **Relative References:** It resolves relative jump targets (like `+` for next label, `-` for previous).
+
+#### Stage 3: Address Allocation
+The compiler calculates the virtual memory address for every instruction.
+* It handles memory segmentation directives (e.g., switching between `.text`, `.data`, `.ktext` or `.kdata`) seamlessly.
+* Alignment constraints are enforced here before any code is generated.
+
+#### Stage 4: Emission & Expression Evaluation
+Finally, instructions are converted to machine code.
+
+```asm
+;; Example of JAMS Advanced Assembly Features
+.macro memcpy(%src, %dest, %size)
+    li $t0, 0
+loop:
+    beq $t0, %size, +   ;; Relative jump forward (+)
+    lb $t1, %src($t0)   ;; Expression evaluation
+    sb $t1, %dest($t0)
+    addi $t0, $t0, 1
+    j -                 ;; Relative jump backward (-) to 'loop' inside macro scope
+.end_macro
+```
+
+<Video src="/images/projects/JAMS/video_2.mp4" alt="JAMS Assembler Pipeline in Action" caption="JAMS Assembler Pipeline in Action"/>
+
+## Simulation & Hardware Emulation
+
+JAMS is engineered to be a cycle-accurate simulator that balances educational visualization with high-performance execution.
+
+### 1. Multi-Architecture Execution Engines
+The core simulation loop is polymorphic, supporting three distinct micro-architectures
+that share a common memory and register backend:
+
+* **Single-Cycle:** Optimized for raw throughput (>40 MHz).
+It executes the entire instruction fetch-decode-execute-writeback sequence in one atomic step.
+* **Multi-Cycle:** Breaks down execution into finite state machine steps,
+allowing students to visualize the micro-operations occurring per clock tick.
+* **Pipelined (MIPS32):** The most complex implementation. I
+t simulates a 5-stage pipeline (IF, ID, EX, MEM, WB) with fully functional **Hazard Detection** and **Forwarding Units**.
+  * **Configurable ALU Fabric:** Unlike rigid simulators, JAMS allows users to define the execution stage hardware.
+  You can customize the **amount, type, and latency (cycles)** of the ALUs.
+  * **Structural Hazards:** If the code requests an operation (e.g., Float Division)
+  and no matching ALU is free, the simulator generates structural stalls, visualizing resource contention in real-time.
+
+<Figure
+    src="/images/projects/JAMS/jams-flow.png"
+    alt="MIPS32 Pipeline Flow Visualization"
+    caption="Real-time visualization of the 5-stage pipeline. The flow graph highlights active instructions and pipeline stalls."
+    fullWidth={true}
+/>
+
+### 2. The Memory Hierarchy: Sparse & Paged
+Simulating a full 32-bit address space (4GB) in a Java array (`byte[4294967296]`) is impossible due to heap limitations.
+I architected a **Sparse Memory System** based on **4KB Pages**.
+* **Lazy Allocation:** Memory pages are allocated only upon the first write operation.
+Reading from unallocated space returns zero without consuming heap.
+* **Cache Simulation:** JAMS sits a configurable Cache layer on top of RAM.
+It supports Direct Mapped, Set-Associative,
+and Fully Associative configurations with Write-Through/Write-Back policies,
+allowing users to profile cache hit/miss rates.
+
+<Figure
+    src="/images/projects/JAMS/jams-memory.png"
+    alt="MIPS32 Memory Visualization"
+    caption="Real-time visualization of the simulation's memory, representing its content as RGB colors."
+    fullWidth={true}
+/>
+
+### 3. Performance: The "Zero-Allocation" Policy
+Java's Garbage Collector (GC) is the enemy of consistent framerates in emulation.
+To achieve stable execution speeds of **40 Million Instructions Per Second (MIPS)**,
+the Single-Cycle engine enforces a strict **Zero-Allocation Policy** in the hot loop.
+* **Object Pooling:** Instruction objects and event payloads are reused.
+* **Mutable State:** Instead of creating new state objects per cycle, the engine mutates pre-allocated registers and signal buses in place.
+* **Result:** This prevents GC pauses, ensuring the UI remains responsive even during intensive simulations.
+
+## Technical Challenges
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 not-prose my-8">
+
+    <Challenge title="Simulating 4GB Memory on the JVM">
+        <p slot="challenge">
+            Simulating the full 32-bit MIPS address space (4 GB) using a primitive `byte[]` array causes immediate <code>OutOfMemoryErrors</code> or excessive heap usage, as most of the address space remains empty during execution.
+        </p>
+        <div slot="solution">
+            I implemented a **Sparse Paged Memory** system. The address space is divided into virtual **4KB pages**. Pages are lazily allocated only upon the first write operation. Reading from an unallocated page returns zero without consuming heap memory, allowing efficient simulation of full memory maps .
+        </div>
+    </Challenge>
+
+    <Challenge title="The Editor Latency Problem">
+        <p slot="challenge">
+            JavaFX's standard text components cannot handle large assembly files (10k+ lines) with real-time semantic analysis without freezing the UI thread during every keystroke.
+        </p>
+        <div slot="solution">
+            I built an **Asynchronous MVC Editor** from scratch.
+            1. **Model:** Replaced `String` with a **Rope Data Structure** for O(log n) editing.
+            2. **Controller:** Implemented "Edit Batching" to compress rapid keystrokes.
+            3. **View:** The AST and Semantic Highlighting are computed on a background thread,
+            updating the UI only when the analysis is complete.
+        </div>
+    </Challenge>
+
+    <Challenge title="Dependency Hell in Plugins">
+        <p slot="challenge">
+            A modular system allows plugins to depend on each other (e.g., "NES4JAMS" depends on "MIPS-Core").
+            Loading them in the wrong order causes <code>ClassDefNotFound</code> errors,
+            and circular dependencies create deadlocks.
+        </p>
+        <div slot="solution">
+            I implemented a **Dependency Graph Resolver** that runs at startup.
+            It builds a Directed Acyclic Graph (DAG) of all discovered `plugin.json` manifests and performs
+            a **Topological Sort** to determine the strictly correct initialization order,
+            ensuring stability before loading any class.
+        </div>
+    </Challenge>
+
+    <Challenge title="Fighting the Garbage Collector">
+        <p slot="challenge">
+            Achieving a consistent 40 MHz simulation speed in Java is difficult because
+            creating millions of temporary objects per second (e.g., instruction wrappers, signals)
+            triggers frequent "Stop-the-world" GC pauses, causing stuttering.
+        </p>
+        <div slot="solution">
+            I enforced a strict **"Zero-Allocation Policy"** for the hot execution loop.
+            Instead of instantiating new objects for every cycle, the engine uses **Object Pooling**
+            and mutable singletons for signals and buses. This keeps the heap stable and ensures smooth,
+            jitter-free execution.
+        </div>
+    </Challenge>
+</div>
+
+<Gallery images={[
+    {src: "/images/projects/JAMS/jams-memory-cache-flow.png", alt: "Cache memory visualization"},
+    {src: "/images/projects/JAMS/jams-caches.png", alt: "Cache configuration widget"},
+    {src: "/images/projects/JAMS/jams-lab.png", alt: "Lab widget, similar to MARS"},
+    {src: "/images/projects/JAMS/jams-registers.png", alt: "Register visualization, exposing locked registers"},
+    {src: "/images/projects/JAMS/jams-information.png", alt: "General information widget"},
+    {src: "/images/projects/JAMS/jams-config-actions.png", alt: "Actions available in the configuration window"},
+    {src: "/images/projects/JAMS/mips-configuration.png", alt: "ALU configuration widget"},
+    {src: "/images/projects/JAMS/jams-main-new-project.png", alt: "New project wizard"},
+]}/>
