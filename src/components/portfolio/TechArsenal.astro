@@ -1,0 +1,75 @@
+---
+// src/components/portfolio/TechArsenal.astro
+import { CodeXml, Cpu, Terminal, Layers } from "@lucide/astro";
+
+const stack = {
+  languages: ["C++20", "C", "Kotlin", "Java", "GLSL / HLSL", "C#", "Python"],
+  graphics: ["Vulkan", "OpenGL 4.6", "Mesh Shaders", "Compute Shaders", "RenderDoc", "NSight"],
+  engine: ["Unreal Engine 5", "Unity", "ImGUI", "Entity Component System (ECS)", "JNI"],
+  tools: ["CMake", "Gradle", "Git", "Docker", "LaTeX", "Linux"]
+};
+---
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">
+
+  <div class="space-y-4">
+    <div class="flex items-center gap-2 mb-2">
+      <CodeXml class="w-4 h-4 text-cyan-500" />
+      <h3 class="text-xs font-mono text-zinc-500 uppercase tracking-widest">Core Languages</h3>
+    </div>
+    <div class="flex flex-col gap-2">
+      {stack.languages.map(item => (
+              <div class="flex items-center gap-3 p-2 rounded bg-zinc-900/30 border border-white/5 hover:border-cyan-500/30 transition-colors">
+                <div class="w-1 h-1 rounded-full bg-cyan-500"></div>
+                <span class="text-xs font-mono text-zinc-300">{item}</span>
+              </div>
+      ))}
+    </div>
+  </div>
+
+  <div class="space-y-4">
+    <div class="flex items-center gap-2 mb-2">
+      <Cpu class="w-4 h-4 text-purple-500" />
+      <h3 class="text-xs font-mono text-zinc-500 uppercase tracking-widest">Graphics API</h3>
+    </div>
+    <div class="flex flex-col gap-2">
+      {stack.graphics.map(item => (
+              <div class="flex items-center gap-3 p-2 rounded bg-zinc-900/30 border border-white/5 hover:border-purple-500/30 transition-colors">
+                <div class="w-1 h-1 rounded-full bg-purple-500"></div>
+                <span class="text-xs font-mono text-zinc-300">{item}</span>
+              </div>
+      ))}
+    </div>
+  </div>
+
+  <div class="space-y-4">
+    <div class="flex items-center gap-2 mb-2">
+      <Layers class="w-4 h-4 text-green-500" />
+      <h3 class="text-xs font-mono text-zinc-500 uppercase tracking-widest">Engine & Arch</h3>
+    </div>
+    <div class="flex flex-col gap-2">
+      {stack.engine.map(item => (
+              <div class="flex items-center gap-3 p-2 rounded bg-zinc-900/30 border border-white/5 hover:border-green-500/30 transition-colors">
+                <div class="w-1 h-1 rounded-full bg-green-500"></div>
+                <span class="text-xs font-mono text-zinc-300">{item}</span>
+              </div>
+      ))}
+    </div>
+  </div>
+
+  <div class="space-y-4">
+    <div class="flex items-center gap-2 mb-2">
+      <Terminal class="w-4 h-4 text-orange-500" />
+      <h3 class="text-xs font-mono text-zinc-500 uppercase tracking-widest">Tooling</h3>
+    </div>
+    <div class="flex flex-col gap-2">
+      {stack.tools.map(item => (
+              <div class="flex items-center gap-3 p-2 rounded bg-zinc-900/30 border border-white/5 hover:border-orange-500/30 transition-colors">
+                <div class="w-1 h-1 rounded-full bg-orange-500"></div>
+                <span class="text-xs font-mono text-zinc-300">{item}</span>
+              </div>
+      ))}
+    </div>
+  </div>
+
+</div>

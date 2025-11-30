@@ -27,7 +27,7 @@ const {title, icon, experiences} = Astro.props;
   </div>
   <div class="relative flex flex-col gap-8 pl-4 pt-4 border-l border-zinc-800 ml-4">
     {
-      experiences.map((item) => (
+      experiences.reverse().map((item) => (
               <div class="relative">
                 {/* Timeline Node */}
                 <div

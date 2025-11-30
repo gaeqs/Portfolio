@@ -1,0 +1,91 @@
+---
+layout: /src/layouts/ProjectLayout.astro
+title: 'CMine'
+pubDate: 2019-06-15
+description: 'A high-performance Minecraft clone written in C# and OpenTK. It serves as a proof-of-concept for optimization techniques, achieving 900+ FPS.'
+languages: [ c-sharp, opengl, optimization, voxel ]
+image:
+  url: "/images/projects/CMine/image_1.png"
+  alt: "CMine Gameplay"
+github: "https://github.com/gaeqs/CMine"
+featured: false
+---
+import FeatureCard from '/src/components/ui/FeatureCard.astro'
+import Challenge from '/src/components/ui/Challenge.astro'
+import Gallery from '/src/components/ui/Gallery.astro'
+
+**CMine** was born out of curiosity. During my university years, I wanted to challenge the assumption that managed languages like C# were too slow for intensive voxel engines.
+
+The goal was simple but ambitious: replicate the core mechanics of Minecraft while maximizing frame rates. By leveraging **modern OpenGL (DSA)** and strict memory management, the engine creates infinite procedural worlds capable of running at **900+ FPS** on 1080p, proving that C# is a viable candidate for high-performance graphics when the Garbage Collector is tamed.
+
+<Gallery images={[
+    {src: "/images/projects/CMine/image_1.png", alt: "Infinite Procedural Terrain Generation"},
+    {src: "/images/projects/CMine/image_2.png", alt: "Transparent blocks (Leaves/Water) and Lighting engine"},
+]}/>
+
+## Engineering Features
+
+Unlike standard implementations that rely on 2D chunk columns (limiting height), CMine implements a fully volumetric chunking system.
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
+    <FeatureCard title="Infinite Verticality" color="cyan">
+        The world is not limited by height.
+        The chunk system is 3-dimensional, having each chunk a size of 16\*16\*16 blocks.
+        This allows for the existence of deep underground caverns or
+        floating islands that extend infinitely upwards and downwards.
+    </FeatureCard>
+
+    <FeatureCard title="Modern OpenGL (OpenTK)" color="green">
+        Bypassed the legacy fixed-function pipeline.
+        It utilizes **Direct State Access (DSA)** and Vertex Buffer Objects (VBOs)
+        to batch geometry uploads, minimizing driver overhead.
+    </FeatureCard>
+
+    <FeatureCard title="Flood-Fill Lighting" color="orange">
+        Implements a cellular automaton algorithm for propagating light. Sunlight and block light (torches) are
+        calculated on the CPU and baked into vertex attributes for zero-cost rendering.
+    </FeatureCard>
+
+    <FeatureCard title="Custom Block Models" color="purple">
+        Support for non-cubic geometry. It renders complex shapes like **Slabs** and **Liquid** surfaces without
+        breaking the voxel grid optimization logic.
+    </FeatureCard>
+</div>
+
+## Technical Challenges
+
+Writing a voxel engine in a garbage-collected environment presents unique hurdles compared to C++.
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 not-prose my-8">
+    <Challenge title="The Garbage Collector Spike">
+        <p slot="challenge">
+            Generating chunks involves processing millions of blocks. In C#, allocating a class for every block would
+            trigger massive Garbage Collection pauses, causing "stutter" every few seconds.
+        </p>
+        <div slot="solution">
+            I implemented a **Struct-based Architecture**. Blocks are lightweight `structs` (value types) packed into
+            flat arrays. Mesh generation reuses a single shared memory buffer, ensuring **zero allocations** during the
+            render loop.
+        </div>
+    </Challenge>
+
+    <Challenge title="Hidden Face Culling">
+        <p slot="challenge">
+            A naive renderer draws every block (6 faces). In a scene with 10,000 blocks, that's 120,000 triangles, most
+            of which are hidden underground.
+        </p>
+        <div slot="solution">
+            The mesher performs a neighbor check before generating geometry. If a block face is touching another opaque
+            block, it is discarded from the mesh. This reduces the triangle count by **~80-90%**, which is the secret
+            behind the 900 FPS performance.
+        </div>
+    </Challenge>
+</div>
+
+## Legacy & Impact
+
+CMine holds a special place in my career: **it was my very first 3D Graphics project.**
+
+Before this, I had no experience with OpenGL or 3D mathematics. Building a
+high-performance voxel engine from scratch was my introduction to Computer Graphics.
+It set the foundation for everything that followed,
+from my Bachelor's Thesis to my Ph.D. research in Vulkan and Mesh Shaders.

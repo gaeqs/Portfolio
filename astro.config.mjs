@@ -7,9 +7,9 @@ import icon from "astro-icon";
 
 import mdx from "@astrojs/mdx";
 
-// https://astro.build/config
 export default defineConfig({
   site: "https://grialc.com",
+
   integrations: [preact(), icon(), sitemap({
     filter: (page) =>
       !page.includes("/blog/tags") &&
@@ -23,9 +23,10 @@ export default defineConfig({
       host: true
     }
   },
+
   markdown: {
     shikiConfig: {
       theme: 'github-dark'
     },
-  },
+  }
 });

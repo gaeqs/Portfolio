@@ -1,6 +1,6 @@
 ---
 import Project from "./Project.astro";
-import {Search, Star} from "@lucide/astro";
+import {Search} from "@lucide/astro";
 
 const allPosts = await Astro.glob("../../pages/portfolio/projects/*.md*");
 
@@ -20,10 +20,6 @@ allPosts.sort((a, b) => {
 
   return priorityB - priorityA;
 });
-
-// Extract unique categories/tags for filter (simplified to top languages for now)
-const allTags = [...new Set(allPosts.flatMap(post => post.frontmatter.languages || []))];
-const categories = ["All", "C++", "Graphics", "Web", "Tools"]; // Custom categories for the UI feel
 ---
 
 <section
@@ -44,24 +40,6 @@ const categories = ["All", "C++", "Graphics", "Web", "Tools"]; // Custom categor
               placeholder="Search modules..."
               autocomplete="off"
       >
-    </div>
-
-    <!-- Filter Tabs -->
-    <div class="flex items-center gap-1 overflow-x-auto w-full md:w-auto no-scrollbar" id="filterTabs">
-      <button
-              class="filter-tab active px-4 py-1.5 text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/5 rounded-sm transition-all border border-transparent data-[active=true]:text-white data-[active=true]:bg-white/10 data-[active=true]:border-white/10 data-[active=true]:shadow-[0_0_10px_rgba(255,255,255,0.1)]"
-              data-category="All"
-      >
-        ALL
-      </button>
-      {categories.filter(c => c !== "All").map(category => (
-              <button
-                      class="filter-tab px-4 py-1.5 text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/5 rounded-sm transition-all border border-transparent data-[active=true]:text-white data-[active=true]:bg-white/10 data-[active=true]:border-white/10 data-[active=true]:shadow-[0_0_10px_rgba(255,255,255,0.1)]"
-                      data-category={category}
-              >
-                {category.toUpperCase()}
-              </button>
-      ))}
     </div>
   </div>
 
@@ -90,19 +68,6 @@ const categories = ["All", "C++", "Graphics", "Web", "Tools"]; // Custom categor
                           data-title={titleString}
                           data-tags={tagsString}
                   >
-                    {/* Decoración extra para Featured: Un borde brillante sutil */}
-                    {isFeatured && (
-                            <div class="absolute -inset-[1px] bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-                    )}
-
-                    {/* Badge de "FEATURED" */}
-                    {isFeatured && (
-                            <div class="absolute top-4 right-4 z-20 flex items-center gap-1 px-2 py-1 bg-zinc-950/80 backdrop-blur-md border border-yellow-500/30 rounded text-[10px] font-mono text-yellow-500 shadow-lg">
-                              <Star class="w-3 h-3 fill-yellow-500/20"/>
-                              <span>STARRED</span>
-                            </div>
-                    )}
-
                     <Project
                             url={post.url}
                             title={post.frontmatter.title}
@@ -110,6 +75,7 @@ const categories = ["All", "C++", "Graphics", "Web", "Tools"]; // Custom categor
                             date={post.frontmatter.pubDate}
                             languages={tags}
                             image={post.frontmatter.image}
+                            isFeatured={isFeatured}
                     />
                   </div>
           );
@@ -140,7 +106,7 @@ const categories = ["All", "C++", "Graphics", "Web", "Tools"]; // Custom categor
 </section>
 
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('astro:page-load', () => {
     const searchInput = document.getElementById('projectSearch') as HTMLInputElement;
     const filterTabs = document.querySelectorAll('.filter-tab');
     const projectItems = document.querySelectorAll('.project-item');
@@ -169,7 +135,6 @@ const categories = ["All", "C++", "Graphics", "Web", "Tools"]; // Custom categor
         }
       });
 
-      // Update UI
       if (itemCountLabel) itemCountLabel.textContent = `${visibleCount} ITEMS FOUND`;
 
       if (emptyState) {
@@ -183,13 +148,11 @@ const categories = ["All", "C++", "Graphics", "Web", "Tools"]; // Custom categor
       }
     }
 
-    // Search Listener
     searchInput?.addEventListener('input', (e) => {
       currentSearch = (e.target as HTMLInputElement).value.toLowerCase();
       filterProjects();
     });
 
-    // Tab Listener
     filterTabs.forEach(tab => {
       tab.addEventListener('click', () => {
         // Update active state
@@ -201,7 +164,6 @@ const categories = ["All", "C++", "Graphics", "Web", "Tools"]; // Custom categor
       });
     });
 
-    // Set initial active tab
     const initialTab = document.querySelector('.filter-tab[data-category="All"]');
     if (initialTab) initialTab.setAttribute('data-active', 'true');
   });

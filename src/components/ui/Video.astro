@@ -42,7 +42,6 @@ const { src, caption } = Astro.props;
 <script>
   document.addEventListener('astro:page-load', () => {
     const videos = document.querySelectorAll('video');
-    const isDesktop = window.matchMedia('(min-width: 768px)').matches;
 
     videos.forEach((video) => {
       const container = video.parentElement;
@@ -57,22 +56,6 @@ const { src, caption } = Astro.props;
           setTimeout(() => playBtn?.classList.add('hidden'), 300);
         }
       };
-
-      if (isDesktop) {
-        video.muted = true;
-        const attemptPlay = async () => {
-          try {
-            await video.play();
-            updateState();
-          } catch (e) {
-            console.log("Desktop autoplay blocked (user setting or battery saver).");
-            updateState();
-          }
-        };
-        attemptPlay();
-      } else {
-        console.log("Mobile detected: Autoplay disabled to save data/battery.");
-      }
 
       const togglePlay = (e: Event) => {
         e.stopPropagation();

@@ -1,0 +1,84 @@
+---
+layout: /src/layouts/ProjectLayout.astro
+title: 'Elastic Solids'
+pubDate: 2022-07-20
+description: 'A physically-based simulation of volumetric elastic bodies in Unity. Features a custom TetGen parser, volume conservation forces, and penalty-based collision response.'
+languages: [ c-sharp, unity, physics, simulation, tetgen ]
+image:
+  url: "/images/projects/ElasticSolid/icon.png"
+  alt: "Elastic Solid Physics Simulation"
+github: "https://github.com/gaeqs/ElasticSolid"
+featured: false
+---
+import FeatureCard from '/src/components/ui/FeatureCard.astro'
+import Challenge from '/src/components/ui/Challenge.astro'
+import Video from '/src/components/ui/Video.astro'
+
+**Elastic Solids** is a physics engine extension for Unity designed to simulate deformable volumetric objects
+(Soft Body Dynamics). Unlike hollow cloth simulations,
+this project models internal pressure and volume conservation using tetrahedral meshes.
+
+Developed as advanced Computer Graphics coursework,
+it implements a mass-spring system extended with volumetric
+constraints to simulate materials like jelly or flesh realistically.
+
+<Video
+    src="/images/projects/ElasticSolid/video_1.mp4"
+    caption="Real-time simulation of an elastic character with dynamic deformations with multiple configurations."
+/>
+
+## Physics Features
+
+The core of the simulation is a custom solver that integrates Newton's laws for thousands of nodes in real-time.
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
+    <FeatureCard title="Tetrahedral Volumetric Forces" color="cyan">
+        Standard springs only maintain edge lengths.
+        This solver adds **Volume Conservation Forces** to each tetrahedron,
+        preventing the mesh from collapsing or inverting under pressure.
+    </FeatureCard>
+
+    <FeatureCard title="Custom TetGen Integration" color="purple">
+        Includes a modified C++ build of **TetGen** compiled as a native plugin.
+        It parses `.node`, `.ele`, and `.face` files to generate the tetrahedral
+        lattice automatically from any standard mesh.
+    </FeatureCard>
+
+    <FeatureCard title="Penalty-Based Collisions" color="red">
+        Implements continuous collision detection using **Implicit Penalty Methods**.
+        It calculates penetration depth and applies a corrective force
+        proportional to the intrusion, ensuring stable contacts.
+    </FeatureCard>
+
+    <FeatureCard title="Environmental Interaction" color="green">
+        The solver accounts for external factors like **Wind Drag** and **Damping Forces**
+        to dissipate energy and stabilize the integration.
+    </FeatureCard>
+</div>
+
+## Technical Challenges
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 not-prose my-8">
+    <Challenge title="Mesh Generation Pipeline">
+        <p slot="challenge">
+            Unity uses surface meshes (triangles), but volumetric physics requires a tetrahedral mesh. Manually creating
+            these structures is impossible for complex assets.
+        </p>
+        <div slot="solution">
+            I integrated a modified version of **TetGen**, a quality tetrahedral mesh generator. I wrote a custom parser
+            that reads the raw ASCII output (`.node`, `.ele`) and reconstructs the topological connectivity graph
+            (neighbors, edges, internal springs) inside Unity at runtime[cite: 206, 212].
+        </div>
+    </Challenge>
+
+    <Challenge title="Integration Instability">
+        <p slot="challenge">
+            Stiff springs and high forces (like collision penalties) cause explicit integrators to explode (explode to
+            infinity) if the time step is too large.
+        </p>
+        <div slot="solution">
+            I implemented a **Sub-stepping** system. The physics solver runs multiple times per visual frame
+            (independent of Unity's `Update`), dividing `deltaTime` into smaller, safe increments to maintain numerical
+            stability without sacrificing simulation speed[cite: 213].
+        </div>
+    </Challenge>
+</div>

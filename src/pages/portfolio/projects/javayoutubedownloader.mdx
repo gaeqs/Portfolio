@@ -1,0 +1,76 @@
+---
+layout: /src/layouts/ProjectLayout.astro
+title: 'Java Youtube Downloader'
+pubDate: 2021-03-15
+description: 'A lightweight Java library designed to reverse-engineer Youtube stream signatures and download content programmatically.'
+languages: [ java, maven, network, reverse-engineering ]
+github: "https://github.com/gaeqs/JavaYoutubeDownloader"
+featured: false
+---
+import FeatureCard from '/src/components/ui/FeatureCard.astro'
+
+**JavaYoutubeDownloader (JYD)** is a specialized utility library designed to bridge the gap between Java applications and YouTube's media delivery network.
+
+It abstracts the complexity of reverse-engineering YouTube's video player logic, allowing developers to decipher obfuscated stream signatures and extract raw video/audio containers (MP4, WebM) with a fluent, type-safe API.
+
+## Library Capabilities
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
+    <FeatureCard title="Signature Deciphering" color="red">
+        Implements algorithms to parse and execute YouTube's "cipher" JavaScript logic locally, converting protected signatures into valid download URLs without a browser.
+    </FeatureCard>
+
+    <FeatureCard title="Multi-Strategy Decoding" color="orange">
+        Uses a robust fallback system (`MultipleDecoderMethod`). It attempts to extract metadata from the HTML structure, the embedded player API, and legacy endpoints to ensure high availability.
+    </FeatureCard>
+
+    <FeatureCard title="Stream Querying API" color="blue">
+        Leverages the **Java Stream API** to filter formats. Developers can easily query for specific codecs, resolutions ("1080p"), or types ("Video only", "Audio only") using predicates.
+    </FeatureCard>
+
+    <FeatureCard title="Maven Ready" color="purple">
+        Designed as a drop-in dependency. It handles the underlying HTTP networking and JSON parsing, exposing only high-level domain objects (`YoutubeVideo`, `StreamOption`).
+    </FeatureCard>
+</div>
+
+## Integration
+
+The library is designed to be concise. Here is how you initialize the decoder and extract the highest-quality video stream available.
+
+```java
+public void downloadVideo(String url, File outputFolder) {
+    // 1. Decode the video metadata using multiple extraction strategies (AND logic)
+    YoutubeVideo video = JavaYoutubeDownloader.decodeOrNull(
+        url,
+        MultipleDecoderMethod.AND,
+        "html", "embedded"
+    );
+
+    if (video == null) throw new RuntimeException("Failed to decode video info");
+
+    // 2. Filter streams: Get best quality with both Video & Audio
+    StreamOption bestOption = video.getStreamOptions().stream()
+        .filter(opt -> opt.getType().hasVideo() && opt.getType().hasAudio())
+        .max(Comparator.comparingInt(opt -> opt.getType().getVideoQuality().ordinal()))
+        .orElseThrow();
+
+    System.out.println("Downloading: " + bestOption.getType());
+
+    // 3. Output file management
+    String filename = video.getTitle() + "." + bestOption.getType().getContainer();
+    File targetFile = new File(outputFolder, filename);
+
+    // 4. Start async download
+    StreamDownloader downloader = new StreamDownloader(bestOption, targetFile, null);
+    new Thread(downloader).start();
+}
+```
+
+## Technical Context
+
+YouTube links are not static.
+The platform serves content via dynamic URLs protected by a rolling signature algorithm that changes frequently.
+
+JYD works by fetching the video page, extracting the player JavaScript bundle,
+identifying the deciphering functions via Regex/Parsing, and executing that logic in Java to sign the request.
+This allows for automation pipelines, archival tools, or custom media players to access the raw content stream.

@@ -1,0 +1,294 @@
+---
+layout: /src/layouts/ProjectLayout.astro
+title: 'Rush Math'
+pubDate: 2024-07-20
+description: 'A header-only C++20 mathematics library tailored for computer graphics. Features strongly-typed linear algebra, compile-time evaluation, and GLSL-like swizzling.'
+languages: [ cpp, cmake, template-metaprogramming, math ]
+github: "https://github.com/gaeqs/Rush"
+featured: false
+---
+
+import FeatureCard from '/src/components/ui/FeatureCard.astro'
+
+**Rush** is a modern, header-only C++20 library designed to replace legacy math wrappers in high-performance graphics applications.
+
+While many math libraries exist (GLM, Eigen), Rush focuses on leveraging **C++20 Concepts** to provide strict type safety without sacrificing the syntactic sugar that graphics engineers love (like swizzling). It is architected to be "Zero-Overhead", ensuring that high-level abstractions compile down to efficient SIMD-friendly instructions.
+
+```cpp
+// Example: Compile-time evaluation with C++20
+constexpr rush::Vec3f up = {0, 1, 0};
+constexpr rush::Vec3f right = {1, 0, 0};
+
+// This cross product is computed by the compiler, zero runtime cost.
+constexpr rush::Vec3f forward = up.cross(right);
+
+// Swizzling syntax for intuitive data manipulation
+rush::Vec4f color = {1.0f, 0.5f, 0.2f, 1.0f};
+rush::Vec3f bgr = color(2, 1, 0); // Reorders to {0.2, 0.5, 1.0}
+```
+
+## Core Design Principles
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
+    <FeatureCard title="C++20 Concepts" color="cyan">
+        Heavily utilizes concept and requires clauses to enforce mathematical validity at compile-time. You cannot
+        accidentally
+        multiply a Mat4x4 by a Vec2, the compiler will stop you with a clear error message.
+    </FeatureCard>
+
+    <FeatureCard title="Zero-Cost Abstractions" color="blue">
+        Most of the operations are marked constexpr. The
+        library is designed so that complex template expressions collapse into simple FPU/SIMD instructions during
+        optimization passes.
+    </FeatureCard>
+
+    <FeatureCard title="Graphics Native Layout" color="purple">
+        Matrices are stored in Column-Major order by default,
+        making them binary-compatible with OpenGL, Vulkan, and SPIR-V shaders without data transposition.
+    </FeatureCard>
+
+    <FeatureCard title="Header-Only & Modular" color="orange">
+        No binaries to link. Just #include &lt;rush/Rush.h&gt;.
+        The library is modularized, allowing you to include only the headers you need (e.g., just Vectors)
+        to keep compilation times low.
+    </FeatureCard>
+</div>
+
+## The Vector Engine
+
+Rush is able to create vectors of any type and dimension but specializes in
+graphics primitives (`Vec2f`, `Vec3f`, `Vec4f`).
+The standout feature is the Swizzling API, which allows accessing components
+in any order using function-call syntax.
+
+```cpp
+rush::Vec<3, float> v1 = { 5.0f, 3.0f, 1.0f };
+
+// Swizzling: Create new vectors by reordering components
+rush::Vec<3, float> v2 = v1(1, 0, 1); // {3.0f, 5.0f, 3.0f}
+rush::Vec<2, float> v3 = v1(1, 2);    // {3.0f, 1.0f}
+
+// Mutable Swizzling (l-value references)
+// This is internally optimized to avoid temporary copies
+v3(1, 0) = v3(0, 1);
+```
+
+### Matrices
+
+Just like vectors, _Rush_ can create matrices of any type and size.
+Depending on the matrix's type, _Rush_ can perform operations
+such as additions, matrix multiplications or iterations.
+Matrices are stored in colum-major format.
+
+```cpp
+rush::Mat<2, 3, float> mat1 = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
+
+//        | 1.0 4.0 |
+// mat1 = | 2.0 5.0 |
+//        | 3.0 6.0 |
+
+float a = mat1(1, 2); // 6.0
+
+rush::Vec<3, float> col = mat1[0]; // {1.0, 2.0, 3.0}
+rush::Vec<2, float> row = mat1.row(0); // {1.0, 4.0}
+
+mat1.row(0) = col(2, 1);
+
+//        | 3.0 2.0 |
+// mat1 = | 2.0 5.0 |
+//        | 3.0 6.0 |
+
+rush::Mat<3, 3, float> squared([](size_t c, size_t r) {
+    return float(c * 3 + r + 1);
+});
+
+//           | 1.0 4.0 7.0 |
+// squared = | 2.0 5.0 8.0 |
+//           | 3.0 6.0 9.0 |
+
+// Basic matrix operations.
+float det = squared.determinant();
+rush::Mat<3, 3, float> inverse = squared.inverse();
+
+// You can also use basic operators
+rush::Mat<2, 3, float> mul = squared * mat1;
+rush::Mat<2, 3, float> add = mul + mat1;
+```
+
+## Linear Algebra & Transformations
+
+Matrices in Rush are designed for 3D transformations.
+It includes a comprehensive suite of static helpers for generating
+Model-View-Projection matrices directly.
+
+```cpp
+// Creating a Perspective Projection Matrix (Vulkan-compatible)
+// The library handles the specific depth-range differences between APIs
+rush::Mat4f projection = rush::Mat4f::perspective(
+    rush::radians(45.0f), // FOV
+    1920.0f / 1080.0f,    // Aspect Ratio
+    0.1f,                 // Near Plane
+    100.0f                // Far Plane
+);
+
+// LookAt View Matrix
+rush::Mat4f view = rush::Mat4f::lookAt(
+    {0, 5, 10},  // Eye
+    {0, 0, 0},   // Center
+    {0, 1, 0}    // Up
+);
+
+// Matrix Multiplication
+rush::Mat4f MVP = projection * view * model;
+```
+
+## Quaternions & Rotation
+
+Handling rotations with Euler angles leads to Gimbal Lock and precision artifacts.
+Rush implements a robust Quat class for spherical interpolation (*SLERP*) and stable rotations.
+
+```cpp
+rush::Quat<double> q = rush::Quat<double>::euler({1.5, 0.2, 0.4});
+rush::Quat<double> r = rush::Quat<double>::angleAxis(std::numbers::pi / 2.0, {0.0, 1.0, 0.0});
+
+// Creates a quaternion that applies both rotations.
+rush::Quat<double> t = q * r;
+
+rush::Vec<3, double> v = {1.0, 0.0, 0.0};
+
+// Applies the rotation to the vector.
+// This operation performs the operation t * v * t*.
+rush::Vec<3, double> result = t * v;
+
+// Creates a rotation matrix.
+rush::Mat<4, 4, double> mat = t.rotationMatrix4();
+```
+
+## Computational Geometry: Bézier Curves
+
+Rush goes beyond linear algebra by implementing a fully templated **N-Degree Bézier System**. Unlike standard implementations fixed to Cubic curves, Rush allows defining curves of *any* order and dimension at compile-time.
+
+The architecture supports chaining segments with automatic C1 continuity and, crucially, supports **Arc-Length Parameterization** (Rectification) to ensure constant velocity traversal.
+
+```cpp
+// Define a Cubic Bézier Segment (4 control points) in 3D space
+rush::BezierSegment<4, 3, float> segment1 = {
+    {0.0f, 0.0f, 0.0f}, // Start
+    {0.0f, 5.0f, 0.0f}, // Control A
+    {5.0f, 5.0f, 0.0f}, // Control B
+    {5.0f, 0.0f, 0.0f}  // End
+};
+
+// Create a chain. 'continuousTo' automatically calculates the first control
+// point of the new segment to ensure smooth tangent continuity.
+auto segment2 = rush::BezierSegment<4, 3, float>::continuousTo(
+    segment1,
+    {8.0f, -2.0f, 0.0f}, // Control B (Next)
+    {10.0f, 0.0f, 0.0f}  // End (Next)
+);
+
+// Combine into a multi-segment curve
+rush::BezierCurve<2, 4, 3, float> path(segment1, segment2);
+
+// Arc-Length Rectification
+// Standard fetching 'fetch(0.5)' bunches up points at curvature.
+// 'rectified' maps t=0.5 to exactly 50% of the physical distance.
+auto smoothPath = path.rectified<100>();
+
+rush::Vec3f point = smoothPath.fetch(0.5f); // Exact center of the path length
+rush::Vec3f tangent = smoothPath.fetchDerivative(0.5f); // For object orientation
+```
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
+    <FeatureCard title="Compile-Time Order" color="purple">
+        Templates define the curve degree.
+        This allows the compiler to unroll the Bernstein polynomial evaluation
+        loop for maximum performance.
+    </FeatureCard>
+
+    <FeatureCard title="Arc-Length Parameterization" color="green">
+        Includes a rectified adapter that creates a look-up table (LUT) to map parametric time t
+        to physical distance s, essential for camera paths and animation speed control.
+    </FeatureCard>
+</div>
+
+## Spatial Partitioning: N-Dimensional Trees
+
+Rush implements a generic **Bounding Volume Hierarchy (BVH)** system capable of
+organizing data in any dimension.
+By using C++ templates, the same `DynamicTree` class serves as a Quadtree (2D),
+Octree (3D), or even a hyper-spatial partitioner (4D+).
+
+The implementation supports both **Static** (packed, cache-friendly)
+and **Dynamic** (insert/remove) strategies,
+optimized for broad-phase collision detection.
+
+```cpp
+// Define a 3D Dynamic Octree (Dimension = 3)
+// <ContentType, BoundType, Dim, CoordType, MaxChildren, Depth>
+using Octree = rush::DynamicTree<int, rush::AABB<3, float>, 3, float, 10, 4>;
+
+// Create the tree with world bounds
+rush::AABB<3, float> worldBounds = { {-100.f}, {100.f} };
+Octree tree(worldBounds);
+
+// Insert objects (Spatial Indexing)
+tree.insert(1, rush::AABB({5, 5, 5}, {1, 1, 1}));
+tree.insert(2, rush::AABB({-5, -5, -5}, {1, 1, 1}));
+
+// Efficient Querying (Broad Phase)
+// Finds all objects intersecting with the query box
+auto results = tree.query(rush::AABB({0, 0, 0}, {10, 10, 10}));
+```
+
+## The Intersection Engine
+
+The library provides a decoupled, stateless collision system.
+It includes a comprehensive suite of intersection tests (intersects)
+and raycasting functions for primitives like AABB, Sphere, Plane, Triangle, and Ray.
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
+    <FeatureCard title="Generic Hit Detection" color="red">
+        Implements a <code>intersectsAny</code> helper that uses
+        <code>std::any</code> and type indexing to resolve collisions between
+        unknown polymorphic shapes at runtime.
+    </FeatureCard>
+
+    <FeatureCard title="Raycast & Feedback" color="blue">
+        The raycasting algorithm returns a detailed
+        <code>RayCastResult</code> containing the exact hit point,
+        surface normal, and penetration distance,
+        essential for physics resolution.
+    </FeatureCard>
+</div>
+
+```cpp
+// Example: Raycasting against a generic object (example extracted from Neon)
+void onMouseButton(const neon::MouseButtonEvent& event) {
+    // Create a ray from the camera
+    rush::Ray3f ray = camera.getRayFromScreen(event.mousePos);
+    rush::RayCastResult<3, float> result;
+
+    // Perform raycast against a complex object (AABB, Sphere, or Mesh)
+    if (rush::raycast(ray, myObject, result)) {
+        // Hit detected! 'result' contains geometric data
+        debugDraw.point(result.point, Colors::Red);
+        debugDraw.line(result.point, result.point + result.normal, Colors::Blue);
+
+        // Check distance
+        if (result.distance < 5.0f) {
+            interact(myObject);
+        }
+    }
+}
+```
+
+## Installation
+
+Rush is CMake-friendly. You can include it via FetchContent or as a git submodule.
+
+```cmake
+# CMakeLists.txt
+add_subdirectory(vendor/Rush)
+target_link_libraries(MyGame PRIVATE Rush)
+```
