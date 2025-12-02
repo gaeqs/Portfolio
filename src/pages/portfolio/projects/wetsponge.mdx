@@ -1,0 +1,91 @@
+---
+layout: /src/layouts/ProjectLayout.astro
+title: 'WetSponge API'
+pubDate: 2016-06-10
+description: 'An early experiment in API unification. A Java abstraction layer designed to bridge the gap between rival Minecraft server architectures (Spigot & Sponge) using the Adapter Pattern.'
+languages: [ java, maven, design-patterns, api-design ]
+github: "https://gitlab.com/degoos/WetSponge"
+featured: false
+---
+import FeatureCard from '/src/components/ui/FeatureCard.astro'
+import Challenge from '/src/components/ui/Challenge.astro'
+import Gallery from '/src/components/ui/Gallery.astro'
+import Figure from '/src/components/ui/Figure.astro'
+import Video from '/src/components/ui/Video.astro'
+
+**WetSponge** was my first significant foray into software architecture, developed years before starting my formal engineering education.
+
+At the time, the Minecraft server ecosystem was fragmented between two incompatible giants: **Spigot**
+(the industry standard) and **Sponge** (the modern challenger).
+Developers were forced to rewrite their plugins entirely for each platform.
+WetSponge was an attempt to solve this by creating a **Unified Standard Library**:
+an abstraction layer that allowed writing business logic once and running it on any server implementation.
+
+Although it is now a legacy project, it represents the genesis of my interest in
+**API Design** and **Multiplatform Architectures**.
+
+## Architectural Design
+
+The library implements the **Adapter Pattern** at a systemic level. The core API defines interfaces for common game concepts,
+while platform-specific modules provide the concrete implementation.
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
+    <FeatureCard title="Unified Event Bus" color="cyan">
+        Abstracted two incompatible paradigms: Spigot's reflection-based `EventPriority`
+        and Sponge's bus-based `Order`. I implemented a **Normalized Listener Pipeline**
+        that wraps native events in generic envelopes,
+        ensuring consistent cancellation behavior and priority handling across ecosystems.
+    </FeatureCard>
+
+    <FeatureCard title="Abstracted Scheduler" color="green">
+        Standardized the execution model by hiding the complexity of `BukkitScheduler` and `Sponge TaskManager`.
+        The API provides a fluent interface to schedule tasks based on **Server Ticks** (game loops)
+        or **Wall-Clock Time**, handling context switching between the main
+        server thread and async worker pools transparently.
+    </FeatureCard>
+
+    <FeatureCard title="Runtime Bridge Injection" color="orange">
+        To support multiple platforms with a single artifact, I engineered a **Dynamic Bridge Loader**.
+        At startup, the core library inspects the runtime environment and injects the correct implementation
+        module using a primitive **Dependency Injection** container.
+    </FeatureCard>
+
+    <FeatureCard title="Command Router & Dispatcher" color="purple">
+        A declarative command system that decouples business logic from platform specifics.
+        It implements a **Cross-Platform Tokenizer** to handle argument parsing and permission validation uniformly,
+        mapping the final execution to the underlying server's logic.
+    </FeatureCard>
+</div>
+
+## Implementation: The "Write Once" Promise
+
+The goal was to make the API feel native. Below is an example of how a developer would register a
+command that works on both platforms without conditional compilation.
+
+```java
+public class MyCrossPlatformPlugin extends WetSpongePlugin {
+
+    @Override
+    public void onEnable() {
+        getLogger().info("Loading cross-platform logic...");
+
+        // Registering a command. The API handles the mapping to
+        // /mycmd in both ecosystems.
+        getCommandManager().register(new MyCommand(), "mycmd");
+    }
+}
+
+class MyCommand implements CommandExecutor {
+    @Override
+    public void onCommand(CommandSender sender, String[] args) {
+        // 'CommandSender' abstracts both Spigot and Sponge implementations
+        sender.sendMessage("Hello from a platform-agnostic plugin!");
+    }
+}
+```
+
+## Retrospective
+
+Looking back, WetSponge was a naive but ambitious precursor to the problems I now solve professionally.
+It taught me the immense difficulty of maintaining a Multiplatform Abstraction:
+a challenge I see reflected today in technologies like Kotlin Multiplatform and the IntelliJ Platform SDK.
