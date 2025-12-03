@@ -1,0 +1,150 @@
+---
+layout: /src/layouts/ProjectLayout.astro
+title: 'Multi-GPU HDR Tone Mapping'
+pubDate: 2023-03-15
+description: 'A high-performance implementation of the Reinhard Tone Mapping operator
+optimized for multi-GPU clusters using CUDA, P2P transfers, and Pinned Memory.'
+languages: [ cuda, cpp, hpc, multi-gpu ]
+github: "https://github.com/gaeqs/PGA1"
+featured: false
+---
+
+
+import FeatureCard from '/src/components/ui/FeatureCard.astro'
+import Challenge from '/src/components/ui/Challenge.astro'
+
+This project explores extreme parallelization techniques applied to image processing.
+The goal was to speed up the **Reinhard Tone Mapping** operator,
+an algorithm used to map High Dynamic Range images to standard displays by calculating the log-average luminance.
+
+Developed to run on a university cluster with **8x NVIDIA Titan GPUs**,
+the implementation focuses on **multi-device scalability**,
+memory transfer optimization, and explicit thread orchestration to saturate
+the compute units of multiple cards simultaneously.
+
+## The Parallel Pipeline
+
+Tone mapping is a pipeline of dependency-heavy algorithms.
+I implemented parallel versions of three fundamental primitives,
+iterating from a naive single-GPU approach to a fully distributed multi-GPU solution.
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
+    <FeatureCard title="Iterative Reduction" color="green">
+        To find the luminance range, I implemented a tree-based reduction kernel using **Shared Memory**. The host
+        iterates kernel launches, reducing the data size by a factor of `BlockSize` at each step until a single value
+        remains.
+    </FeatureCard>
+
+    <FeatureCard title="P2P Multi-GPU Scaling" color="orange">
+        A host-side orchestration layer using C++ `std::thread` and `std::future`. It splits the image into chunks and
+        distributes them across GPUs using **Peer-to-Peer** memory access (`cudaMemcpyPeer`), bypassing the CPU
+        RAM bottleneck.
+    </FeatureCard>
+
+    <FeatureCard title="Blelloch Scan" color="purple">
+        Implementation of the **Exclusive Scan** algorithm to compute the Cumulative Distribution Function
+        It uses a shared memory approach with Up-Sweep and Down-Sweep phases to parallelize the sequential
+        dependency.
+    </FeatureCard>
+
+    <FeatureCard title="Pinned Memory Optimization" color="blue">
+        Utilizes **Page-Locked Memory** to accelerate host-to-device transfers. This allows the GPU's DMA
+        engine to read system memory directly, overlapping transfer and compute operations.
+    </FeatureCard>
+</div>
+
+## Implementation Details
+
+### 1. Multi-GPU Orchestration with C++ Threads
+The system detects available devices and spawns a worker thread for each one. Data is scattered using P2P copies where possible, allowing GPUs to communicate directly over the PCIe bus.
+
+```cpp
+// funcHDRGPU.cu: Distributing work across N GPUs
+int numDevices;
+cudaGetDeviceCount(&numDevices);
+
+std::vector<std::future<std::pair<float, float>>> results;
+std::vector<std::thread> threads;
+
+for (int i = 0; i < numDevices; ++i) {
+    // Calculate chunk size for this GPU
+    size_t workSize = ...;
+
+    // P2P Transfer: Copy directly from Primary GPU to Worker GPU
+    if (i != 0) {
+         cudaMemcpyPeer(data, i, d_logLuminance + offset, 0, workSize);
+    }
+
+    // Launch worker thread asynchronously
+    std::promise<std::pair<float, float>> promise;
+    results.push_back(promise.get_future());
+
+    threads.emplace_back(minmaxOfArray, i, data, workSize, std::move(promise));
+}
+```
+
+## 2. Shared Memory Reduction
+
+I implemented a classic robust reduction using Shared Memory and `__syncthreads()`.
+This ensures compatibility across different CUDA architectures
+and provides a clear mental model of the reduction tree.
+
+```
+// funcHDR.cu: Block-level reduction using Shared Memory
+extern __shared__ float sData[];
+
+// Load data into shared memory
+sData[tid] = originalData[gid];
+__syncthreads();
+
+// Reduction loop in Shared Memory
+for (size_t s = blockDim.x >> 1; s > 0; s >>= 1) {
+    if (tid < s) {
+        sData[tid] = min(sData[tid], sData[tid + s]);
+    }
+    __syncthreads();
+}
+
+// Write block result to global memory
+if (tid == 0) output[blockIdx.x] = sData[0];
+```
+
+## Technical Challenges
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 not-prose my-8">
+
+    <Challenge title="PCI-e Bandwidth Bottleneck">
+        <p slot="challenge">
+            In the initial version, transferring the massive HDR
+            images (float32) to the GPUs took longer than the computation itself. The overhead of standard cudaMemcpy
+            was
+            killing the speedup.
+        </p>
+        <div slot="solution">
+            I implemented a version using Pinned Memory (cudaHostAlloc). This prevents the OS from paging
+            out the memory, allowing the GPU to perform high-speed DMA transfers. This significantly reduced the total
+            execution time, especially for large datasets.
+        </div>
+    </Challenge>
+
+    <Challenge title="Atomic Contention">
+        <p slot="challenge">
+            The histogram kernel requires counting occurrences of
+            luminance values. A naive approach where thousands of threads write to the same global bins array causes
+            massive
+            atomic contention.
+        </p>
+        <div slot="solution">
+            I mitigated this by optimizing the grid size and memory access patterns. While the final write
+            uses atomicAdd on global memory, the workload distribution ensures that threads are spread out, and the
+            multi-GPU split further reduces contention on any single memory bank.
+        </div>
+    </Challenge>
+</div>
+
+## Results
+
+The final implementation was benchmarked on high-resolution textures with a maximum size of 200 MB.
+The Multi-GPU version demonstrated the ability to scale the workload,
+while the Pinned Memory version proved that for memory-bound algorithms like this,
+optimizing the data transfer path is often more critical than optimizing the kernel ALU operations.

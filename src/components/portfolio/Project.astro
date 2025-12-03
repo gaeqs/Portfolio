@@ -8,7 +8,7 @@ interface Props {
   url: string;
   languages: string[];
   image?: { url: string; alt: string };
-  isFeatured?: boolean; // NUEVA PROP
+  isFeatured?: boolean;
 }
 
 const {title, description, url, languages, image, isFeatured = false} = Astro.props;
@@ -16,6 +16,12 @@ const {title, description, url, languages, image, isFeatured = false} = Astro.pr
 // Lógica de colores (Igual que antes)
 const getTheme = (tags: string[]) => {
   const t = tags.join(" ").toLowerCase();
+    if (t.includes("c-sharp") || t.includes("unity") || t.includes("cuda")) return {
+        text: "text-green-400",
+        border: "border-green-500/30",
+        bg: "from-green-600/20 to-green-900/40",
+        dot: "bg-green-500"
+    };
   if (t.includes("c++") || t.includes("cpp")) return {
     text: "text-blue-400",
     border: "border-blue-500/30",
@@ -39,12 +45,6 @@ const getTheme = (tags: string[]) => {
     border: "border-yellow-500/30",
     bg: "from-yellow-600/20 to-yellow-900/40",
     dot: "bg-yellow-500"
-  };
-  if (t.includes("c-sharp") || t.includes("unity")) return {
-    text: "text-green-400",
-    border: "border-green-500/30",
-    bg: "from-green-600/20 to-green-900/40",
-    dot: "bg-green-500"
   };
   return {
     text: "text-zinc-400",
