@@ -1,0 +1,140 @@
+---
+layout: /src/layouts/ProjectLayout.astro
+title: 'EntityAI Kotlin DSL'
+pubDate: 2022-05-20
+description: 'A fluent Kotlin DSL and AI library for Minecraft entities. Features Behavior Trees, State Machines, and a type-safe builder syntax that abstracts NMS complexity.'
+languages: [ kotlin, java, ai, dsl, game-dev ]
+github: "https://github.com/gaeqs/MinecraftMod"
+featured: false
+---
+
+import FeatureCard from '/src/components/ui/FeatureCard.astro'
+import Challenge from '/src/components/ui/Challenge.astro'
+import Figure from '/src/components/ui/Figure.astro'
+
+**EntityAI** is a proof-of-concept library designed to solve a specific problem: writing Artificial Intelligence
+logic in Minecraft's native Java API is verbose, fragile, and difficult to maintain.
+
+This project is the result of "over-engineering" a university assignment.
+
+The task was simple: implement basic character behaviors using a provided (and quite limited)
+AI library for Unity. Instead of following the easy path, my team and I decided to build a **Minecraft Mod**.
+
+Since we couldn't use the provided Unity tools (and Minecraft's internal AI system is notoriously
+verbose and fragile), I had to architect my own solution.
+I engineered a high-level **Kotlin DSL (Domain Specific Language)** that replaces the spaghetti code
+of native Minecraft development with a clean, declarative syntax for **Behavior Trees** and **State Machines**.
+
+## The Kotlin DSL
+
+The core innovation is the use of **Kotlin Type-Safe Builders**
+and **Higher-Order Functions** to create a readable syntax for AI logic.
+Instead of chaining objects manually, the API allows defining behavior hierarchies naturally.
+
+```kotlin
+ai.activities += TreeActivity("default", ai, rootLoopUnconditional {
+    runAndWait {
+        or {
+            and {
+                findNearestLivingEntities()
+                or {
+                    // Find enemy in a distance of 32 blocks.
+                    findAttackTargetIfNotFound(32.0f) { it is EnderVillager }
+                    findAttackTargetIfNotFound(32.0f) {
+                        it is PlayerEntity && !it.isCreative && !it.isSpectator
+                    }
+                }
+                // walkToEntity is a macro: generates more nodes under the hood.
+                walkToEntity(MemoryTypes.ATTACK_TARGET, 1.5f, 1.0f, 32.0f)
+                succeeder { attack() }
+            }
+            and {
+                findRandomWalkTarget(1.0f)
+                timed(40, 60) { walkToTarget() } // 40-60 ticks. 1 tick = 0.05s
+            }
+        }
+    }
+})
+```
+
+## Architecture: The "Activity" System
+
+The library introduces an architecture based on Activities.
+Unlike standard Minecraft entities that run a single flat list of goals,
+EntityAI entities run a Hierarchical State Machine.
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
+    <FeatureCard title="Behavior Tree Implementation" color="purple">
+        A robust implementation of standard
+        AI nodes: Composites (Sequence, Selector), Decorators (Inverter, Timed, Loop), and Leafs (Action,
+        Condition).
+    </FeatureCard>
+
+    <FeatureCard title="Memory & Blackboard" color="cyan">
+        Implemented a strongly-typed Blackboard System (MemoryTypes).
+        Nodes can share data like ATTACK_TARGET or HOME_POS without coupling, resolving references at
+        runtime.
+    </FeatureCard>
+
+    <FeatureCard title="Hybrid State Machines" color="orange">
+        Entities can switch between entire Behavior Trees based
+        on high-level states (e.g., "Working", "Sleeping", "Fleeing"). This Activity Manager prevents giant,
+        unmanageable trees.
+    </FeatureCard>
+
+    <FeatureCard title="NMS Abstraction Layer" color="green">
+        Wraps Minecraft's obfuscated internal methods (NMS) into
+        stable Kotlin interfaces. This decoupling allowed the mod to survive game updates with minimal
+        refactoring.
+    </FeatureCard>
+</div>
+
+<Figure
+    src="/images/projects/EntityAI/behavior_tree.jpg" alt="Behavior Tree Diagram for Ender Guardian"
+    caption="Visual representation of the Ender Guardian's main activity."
+    fullWidth={true}
+/>
+
+## Use Case: Magic End
+
+The library was validated by building Magic End,
+a mod that introduces a new ecosystem to the End dimension.
+
+* **Complex Societies**: Implemented as Endervilles, villages where entities have professions
+(Farmer, Guardian, Shaman) and interact socially (sharing food, calling for help).
+* **Evolution Mechanics**: The Void Worm entity uses the State Machine to track its "kill count"
+and physically evolves into a Void Snake boss after consuming enough enemies.
+
+## Technical Challenges
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 not-prose my-8">
+    <Challenge title="Navigating the Spaghetti">
+        <p slot="challenge">
+            Minecraft's internal pathfinding engine is notoriously
+            unpredictable and undocumented. Complex entities often got stuck or spun in circles when calculating paths
+            in
+            the floating islands of the End.
+        </p>
+        <div slot="solution">
+            I reverse-engineered the pathfinding code and re-implemented a Path Debugger left unfinished
+            by Mojang devs. By visualizing the navigation mesh and node weights in real-time, I was able to tune the A*
+            heuristic to handle verticality and void gaps correctly.
+        </div>
+    </Challenge>
+
+    <Challenge title="Kotlin Interoperability">
+        <p slot="challenge">
+            The goal was to make the API feel "Native Kotlin" while
+            running inside Minecraft.
+        </p>
+        <div slot="solution">
+            I used Inline Functions and Reified Type Parameters to eliminate Java boilerplate. For
+            example, looking up a component becomes entity.get&lt;MyComponent&gt;() instead of
+            entity.getComponent(MyComponent.class), reducing verbosity and improving runtime safety.
+        </div>
+    </Challenge>
+</div>
+
+<Figure src="/images/projects/EntityAI/debug_path.png" alt="Pathfinding Debug Visualization"
+        caption="Real-time visualization of the A* pathfinding nodes used to debug navigation."/>
+
